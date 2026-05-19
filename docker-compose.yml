@@ -1,0 +1,398 @@
+version: "3.9"
+
+# ═══════════════════════════════════════════════════════════
+# NEXUS Supply Chain Control Tower — Docker Compose
+# Full production-grade service stack
+# ═══════════════════════════════════════════════════════════
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+x-restart-policy: &restart-policy
+  restart: unless-stopped
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+networks:
+  nexus-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  kafka-data:
+    driver: local
+  zookeeper-data:
+    driver: local
+  mlflow-data:
+    driver: local
+  nginx-certs:
+    driver: local
+
+services:
+
+  # ─────────────────────────────────────────────
+  # INFRASTRUCTURE LAYER
+  # ─────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexus-postgres
+    <<: *restart-policy
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nexus_db}
+      POSTGRES_USER: ${POSTGRES_USER:-nexus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexus_secure_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - nexus-network
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexus} -d ${POSTGRES_DB:-nexus_db}"]
+    logging: *default-logging
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: nexus-redis
+    <<: *restart-policy
+    command: >
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:-nexus_redis_pass}
+      --appendonly yes
+      --appendfsync everysec
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - nexus-network
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-nexus_redis_pass}", "ping"]
+    logging: *default-logging
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: nexus-zookeeper
+    <<: *restart-policy
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 2
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+    networks:
+      - nexus-network
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "bash", "-c", "echo 'ruok' | nc localhost 2181"]
+    logging: *default-logging
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: nexus-kafka
+    <<: *restart-policy
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_NUM_PARTITIONS: 6
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    ports:
+      - "9092:9092"
+    networks:
+      - nexus-network
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:29092"]
+    logging: *default-logging
+
+  kafka-setup:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: nexus-kafka-setup
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 6 --replication-factor 1 --topic supply-chain.disruptions
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 6 --replication-factor 1 --topic supply-chain.inventory
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 6 --replication-factor 1 --topic supply-chain.shipments
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 3 --replication-factor 1 --topic supply-chain.decisions
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 3 --replication-factor 1 --topic supply-chain.kpis
+        kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 3 --replication-factor 1 --topic supply-chain.alerts
+        echo 'Kafka topics created successfully'
+      "
+    networks:
+      - nexus-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: nexus-kafka-ui
+    <<: *restart-policy
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: nexus-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      AUTH_TYPE: "LOGIN_FORM"
+      SPRING_SECURITY_USER_NAME: ${KAFKA_UI_USER:-admin}
+      SPRING_SECURITY_USER_PASSWORD: ${KAFKA_UI_PASSWORD:-nexus123}
+    ports:
+      - "8080:8080"
+    networks:
+      - nexus-network
+    logging: *default-logging
+
+  # ─────────────────────────────────────────────
+  # ML OPS LAYER
+  # ─────────────────────────────────────────────
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.9.0
+    container_name: nexus-mlflow
+    <<: *restart-policy
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MLFLOW_TRACKING_URI: postgresql://${POSTGRES_USER:-nexus}:${POSTGRES_PASSWORD:-nexus_secure_password}@postgres:5432/${POSTGRES_DB:-nexus_db}
+      MLFLOW_ARTIFACT_ROOT: /mlflow/artifacts
+      MLFLOW_SERVER_HOST: 0.0.0.0
+      MLFLOW_SERVER_PORT: 5000
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://${POSTGRES_USER:-nexus}:${POSTGRES_PASSWORD:-nexus_secure_password}@postgres:5432/${POSTGRES_DB:-nexus_db}
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+      --workers 2
+    volumes:
+      - mlflow-data:/mlflow/artifacts
+    ports:
+      - "5000:5000"
+    networks:
+      - nexus-network
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+    logging: *default-logging
+
+  # ─────────────────────────────────────────────
+  # APPLICATION LAYER
+  # ─────────────────────────────────────────────
+
+  nexus-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+      args:
+        PYTHON_VERSION: "3.11"
+    container_name: nexus-api
+    <<: *restart-policy
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      # Database
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-nexus}:${POSTGRES_PASSWORD:-nexus_secure_password}@postgres:5432/${POSTGRES_DB:-nexus_db}
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-nexus_redis_pass}@redis:6379/0
+      # Kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      # AI
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # App
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production-minimum-32-chars}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      # MLflow
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      # Rate Limiting
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-100}
+      RATE_LIMIT_BURST: ${RATE_LIMIT_BURST:-20}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+    networks:
+      - nexus-network
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    logging: *default-logging
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nexus-api.rule=PathPrefix(`/api`) || PathPrefix(`/ws`) || PathPrefix(`/docs`)"
+
+  nexus-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    container_name: nexus-worker
+    <<: *restart-policy
+    depends_on:
+      nexus-api:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-nexus}:${POSTGRES_PASSWORD:-nexus_secure_password}@postgres:5432/${POSTGRES_DB:-nexus_db}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-nexus_redis_pass}@redis:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-nexus_redis_pass}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-nexus_redis_pass}@redis:6379/2
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    command: celery -A workers.celery_app worker --loglevel=info --concurrency=4 -Q default,agents,ml,notifications
+    volumes:
+      - ./backend:/app
+    networks:
+      - nexus-network
+    logging: *default-logging
+
+  nexus-beat:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    container_name: nexus-beat
+    <<: *restart-policy
+    depends_on:
+      - nexus-worker
+    environment:
+      REDIS_URL: redis://:${REDIS_PASSWORD:-nexus_redis_pass}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-nexus_redis_pass}@redis:6379/1
+    command: celery -A workers.celery_app beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./backend:/app
+    networks:
+      - nexus-network
+    logging: *default-logging
+
+  nexus-frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8000}
+        NEXT_PUBLIC_MAPBOX_TOKEN: ${NEXT_PUBLIC_MAPBOX_TOKEN}
+    container_name: nexus-frontend
+    <<: *restart-policy
+    depends_on:
+      nexus-api:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    networks:
+      - nexus-network
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+    logging: *default-logging
+
+  # ─────────────────────────────────────────────
+  # OBSERVABILITY LAYER
+  # ─────────────────────────────────────────────
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: nexus-prometheus
+    <<: *restart-policy
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./infra/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - nexus-network
+    logging: *default-logging
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: nexus-grafana
+    <<: *restart-policy
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-nexus_grafana}
+      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3001}
+    volumes:
+      - ./infra/monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+      - ./infra/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3001:3000"
+    networks:
+      - nexus-network
+    logging: *default-logging
+
+  # ─────────────────────────────────────────────
+  # REVERSE PROXY
+  # ─────────────────────────────────────────────
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nexus-nginx
+    <<: *restart-policy
+    depends_on:
+      - nexus-api
+      - nexus-frontend
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx-certs:/etc/nginx/certs
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - nexus-network
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "nginx", "-t"]
+    logging: *default-logging

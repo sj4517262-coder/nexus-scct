@@ -1,0 +1,417 @@
+name: NEXUS CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, "release/*"]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      deploy_environment:
+        description: 'Target deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options: [staging, production]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/nexus
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────
+  # CODE QUALITY & SECURITY
+  # ─────────────────────────────────────────────
+  lint-and-security:
+    name: Lint & Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install linting tools
+        run: pip install ruff mypy black bandit safety
+
+      - name: Run Ruff (linter)
+        run: ruff check backend/ ml/ --output-format=github
+
+      - name: Run Black (formatter check)
+        run: black --check backend/ ml/
+
+      - name: Run Mypy (type checking)
+        run: mypy backend/ --ignore-missing-imports --no-strict-optional
+
+      - name: Run Bandit (security scan)
+        run: bandit -r backend/ -ll --exit-zero
+
+      - name: Run Safety (dependency vulnerability check)
+        run: safety check -r backend/requirements.txt --full-report
+        continue-on-error: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Frontend lint
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run type-check
+
+  # ─────────────────────────────────────────────
+  # BACKEND TESTS
+  # ─────────────────────────────────────────────
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-security
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: nexus_test
+          POSTGRES_USER: nexus
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7.2-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Run database migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://nexus:test_password@localhost:5432/nexus_test
+        run: alembic upgrade head
+
+      - name: Run unit tests
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://nexus:test_password@localhost:5432/nexus_test
+          REDIS_URL: redis://localhost:6379/15
+          SECRET_KEY: test-secret-key-minimum-32-characters-long
+          ENVIRONMENT: test
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          pytest tests/unit/ -v \
+            --cov=backend \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --junit-xml=test-results/unit.xml
+
+      - name: Run integration tests
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://nexus:test_password@localhost:5432/nexus_test
+          REDIS_URL: redis://localhost:6379/15
+          SECRET_KEY: test-secret-key-minimum-32-characters-long
+          ENVIRONMENT: test
+        run: |
+          pytest tests/integration/ -v \
+            --junit-xml=test-results/integration.xml
+
+      - name: Run agent orchestration tests
+        working-directory: backend
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ENVIRONMENT: test
+        run: |
+          pytest tests/agents/ -v \
+            --junit-xml=test-results/agents.xml
+        continue-on-error: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: backend/coverage.xml
+          flags: backend
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-backend
+          path: backend/test-results/
+
+  # ─────────────────────────────────────────────
+  # FRONTEND TESTS
+  # ─────────────────────────────────────────────
+  test-frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-security
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run unit tests
+        working-directory: frontend
+        run: npm run test -- --coverage --watchAll=false
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend/.next/
+
+  # ─────────────────────────────────────────────
+  # ML MODEL VALIDATION
+  # ─────────────────────────────────────────────
+  validate-ml-models:
+    name: ML Model Validation
+    runs-on: ubuntu-latest
+    needs: lint-and-security
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # DVC needs full history
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install ML dependencies
+        run: pip install mlflow scikit-learn pandas numpy xgboost
+
+      - name: Validate demand forecasting model
+        run: |
+          python ml/evaluation/validate_tft.py \
+            --model-uri models:/nexus-tft-forecast/latest \
+            --threshold-mae 850 \
+            --threshold-mape 0.08
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+        continue-on-error: true
+
+      - name: Validate supplier risk model
+        run: |
+          python ml/evaluation/validate_risk.py \
+            --model-uri models:/nexus-supplier-risk/latest \
+            --threshold-auc 0.88
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────
+  # BUILD DOCKER IMAGES
+  # ─────────────────────────────────────────────
+  build-images:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.api
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: docker/Dockerfile.frontend
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Worker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.worker
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-worker:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────────────
+  # DEPLOY TO STAGING
+  # ─────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-images
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.nexus-tower.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG_STAGING }}
+
+      - name: Update image tags in k8s manifests
+        run: |
+          sed -i "s|IMAGE_TAG|${{ github.sha }}|g" k8s/deployments/*.yaml
+
+      - name: Deploy to staging namespace
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/deployments/
+          kubectl apply -f k8s/services/
+          kubectl apply -f k8s/ingress.yaml
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/nexus-api -n nexus-staging --timeout=300s
+          kubectl rollout status deployment/nexus-frontend -n nexus-staging --timeout=300s
+          kubectl rollout status deployment/nexus-worker -n nexus-staging --timeout=300s
+
+      - name: Run smoke tests
+        run: |
+          sleep 30
+          curl -f https://staging.nexus-tower.com/health || exit 1
+          echo "✅ Staging deployment successful"
+
+  # ─────────────────────────────────────────────
+  # DEPLOY TO PRODUCTION
+  # ─────────────────────────────────────────────
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-images
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://nexus-tower.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl (production)
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
+
+      - name: Update image tags
+        run: |
+          sed -i "s|IMAGE_TAG|${{ github.sha }}|g" k8s/deployments/*.yaml
+
+      - name: Blue-Green deployment
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/configmap-prod.yaml
+          # Deploy new version (green)
+          kubectl apply -f k8s/deployments/
+          kubectl rollout status deployment/nexus-api -n nexus --timeout=600s
+          # Switch traffic to green
+          kubectl apply -f k8s/services/
+          kubectl apply -f k8s/ingress.yaml
+
+      - name: Production smoke tests
+        run: |
+          sleep 60
+          curl -f https://nexus-tower.com/health || exit 1
+          echo "✅ Production deployment successful"
+
+      - name: Notify on success
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: "🚀 NEXUS v${{ github.sha }} deployed to production"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: success()

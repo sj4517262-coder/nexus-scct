@@ -1,0 +1,152 @@
+# ═══════════════════════════════════════════════════════════
+# NEXUS Supply Chain Control Tower — Python Dependencies
+# ═══════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────
+# Web Framework
+# ─────────────────────────────────────────────
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+httpx==0.25.2
+aiohttp==3.9.1
+websockets==12.0
+
+# ─────────────────────────────────────────────
+# Database & ORM
+# ─────────────────────────────────────────────
+sqlalchemy[asyncio]==2.0.23
+asyncpg==0.29.0
+alembic==1.12.1
+psycopg2-binary==2.9.9
+
+# ─────────────────────────────────────────────
+# Caching & Message Queue
+# ─────────────────────────────────────────────
+redis[hiredis]==5.0.1
+aioredis==2.0.1
+celery[redis]==5.3.6
+kombu==5.3.3
+flower==2.0.1
+
+# ─────────────────────────────────────────────
+# Kafka Streaming
+# ─────────────────────────────────────────────
+confluent-kafka==2.3.0
+kafka-python==2.0.2
+aiokafka==0.10.0
+
+# ─────────────────────────────────────────────
+# Authentication & Security
+# ─────────────────────────────────────────────
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-dotenv==1.0.0
+cryptography==41.0.7
+
+# ─────────────────────────────────────────────
+# AI / LLM Frameworks
+# ─────────────────────────────────────────────
+langchain==0.1.0
+langchain-anthropic==0.1.1
+langchain-openai==0.0.5
+langchain-community==0.0.10
+langgraph==0.0.40
+anthropic==0.18.1
+openai==1.6.1
+tiktoken==0.5.2
+crewai==0.1.55
+
+# ─────────────────────────────────────────────
+# ML & Data Science
+# ─────────────────────────────────────────────
+numpy==1.26.2
+pandas==2.1.4
+scipy==1.11.4
+scikit-learn==1.3.2
+xgboost==2.0.3
+lightgbm==4.1.0
+statsmodels==0.14.1
+
+# ─────────────────────────────────────────────
+# Deep Learning (Demand Forecasting)
+# ─────────────────────────────────────────────
+torch==2.1.2
+pytorch-forecasting==1.0.0
+pytorch-lightning==2.1.3
+prophet==1.1.5
+
+# ─────────────────────────────────────────────
+# Reinforcement Learning (Inventory Optimizer)
+# ─────────────────────────────────────────────
+stable-baselines3==2.2.1
+gymnasium==0.29.1
+
+# ─────────────────────────────────────────────
+# Route Optimization
+# ─────────────────────────────────────────────
+ortools==9.8.3296
+
+# ─────────────────────────────────────────────
+# Graph Analytics
+# ─────────────────────────────────────────────
+networkx==3.2.1
+pyvis==0.3.2
+
+# ─────────────────────────────────────────────
+# MLOps
+# ─────────────────────────────────────────────
+mlflow==2.9.2
+dvc==3.38.1
+dvc-s3==3.0.1
+
+# ─────────────────────────────────────────────
+# Data Validation & Serialization
+# ─────────────────────────────────────────────
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# ─────────────────────────────────────────────
+# Data Processing
+# ─────────────────────────────────────────────
+pyarrow==14.0.2
+fastparquet==2023.10.1
+openpyxl==3.1.2
+
+# ─────────────────────────────────────────────
+# Monitoring & Observability
+# ─────────────────────────────────────────────
+prometheus-fastapi-instrumentator==6.1.0
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-instrumentation-fastapi==0.42b0
+structlog==23.3.0
+
+# ─────────────────────────────────────────────
+# HTTP Client & Utilities
+# ─────────────────────────────────────────────
+requests==2.31.0
+tenacity==8.2.3
+python-dateutil==2.8.2
+pytz==2023.3.post1
+arrow==1.3.0
+
+# ─────────────────────────────────────────────
+# Testing
+# ─────────────────────────────────────────────
+pytest==7.4.3
+pytest-asyncio==0.23.2
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+httpx==0.25.2
+factory-boy==3.3.0
+faker==22.0.0
+locust==2.20.0
+
+# ─────────────────────────────────────────────
+# Code Quality
+# ─────────────────────────────────────────────
+black==23.12.1
+ruff==0.1.9
+mypy==1.8.0
+pre-commit==3.6.0

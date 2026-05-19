@@ -1,0 +1,196 @@
+# ═══════════════════════════════════════════════════════════
+# docker/Dockerfile.api — FastAPI Backend
+# Multi-stage build for minimal production image
+# ═══════════════════════════════════════════════════════════
+FROM python:3.11-slim AS builder
+
+ARG PYTHON_VERSION=3.11
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies into /install
+COPY backend/requirements.txt .
+RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
+
+# ─── Production Stage ─────────────────────────
+FROM python:3.11-slim AS production
+
+LABEL maintainer="NEXUS Platform Team"
+LABEL org.opencontainers.image.title="NEXUS API"
+LABEL org.opencontainers.image.version="2.4.0"
+LABEL org.opencontainers.image.description="NEXUS Supply Chain Control Tower - FastAPI Backend"
+
+# Create non-root user
+RUN groupadd --gid 1001 nexus && \
+    useradd --uid 1001 --gid nexus --shell /bin/bash --create-home nexus
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Python packages from builder
+COPY --from=builder /install /usr/local
+
+WORKDIR /app
+
+# Copy application code
+COPY --chown=nexus:nexus backend/ .
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /tmp && \
+    chown -R nexus:nexus /app /tmp
+
+USER nexus
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", \
+    "--host", "0.0.0.0", \
+    "--port", "8000", \
+    "--workers", "4", \
+    "--loop", "uvloop", \
+    "--http", "httptools", \
+    "--access-log", \
+    "--log-level", "info"]
+
+
+# ═══════════════════════════════════════════════════════════
+# docker/Dockerfile.frontend — Next.js Frontend
+# ═══════════════════════════════════════════════════════════
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+FROM node:20-alpine AS builder-fe
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ .
+
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ARG NEXT_PUBLIC_WS_URL=ws://localhost:8000
+ARG NEXT_PUBLIC_MAPBOX_TOKEN=""
+
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_MAPBOX_TOKEN=$NEXT_PUBLIC_MAPBOX_TOKEN
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN npm run build
+
+FROM node:20-alpine AS production-fe
+LABEL org.opencontainers.image.title="NEXUS Frontend"
+LABEL org.opencontainers.image.version="2.4.0"
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+COPY --from=builder-fe /app/public ./public
+COPY --from=builder-fe --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder-fe --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000/ || exit 1
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
+
+
+# ═══════════════════════════════════════════════════════════
+# docker/Dockerfile.worker — Celery Worker
+# ═══════════════════════════════════════════════════════════
+FROM python:3.11-slim AS worker-builder
+
+WORKDIR /build
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libpq-dev gcc && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY backend/requirements.txt .
+RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
+
+FROM python:3.11-slim AS worker-production
+LABEL org.opencontainers.image.title="NEXUS Worker"
+LABEL org.opencontainers.image.version="2.4.0"
+LABEL org.opencontainers.image.description="NEXUS Celery Async Worker"
+
+RUN groupadd --gid 1001 nexus && \
+    useradd --uid 1001 --gid nexus --shell /bin/bash --create-home nexus
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 && rm -rf /var/lib/apt/lists/*
+
+COPY --from=worker-builder /install /usr/local
+
+WORKDIR /app
+COPY --chown=nexus:nexus backend/ .
+
+RUN mkdir -p /app/data /app/logs && chown -R nexus:nexus /app
+
+USER nexus
+
+HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=3 \
+    CMD celery -A workers.celery_app inspect ping -d celery@$$HOSTNAME || exit 1
+
+CMD ["celery", "-A", "workers.celery_app", "worker", \
+    "--loglevel=info", \
+    "--concurrency=4", \
+    "-Q", "default,agents,ml,notifications", \
+    "--max-tasks-per-child=100"]
+
+
+# ═══════════════════════════════════════════════════════════
+# docker/Dockerfile.ml — ML Training Container
+# ═══════════════════════════════════════════════════════════
+FROM python:3.11 AS ml-trainer
+LABEL org.opencontainers.image.title="NEXUS ML Trainer"
+LABEL org.opencontainers.image.description="NEXUS ML model training container with GPU support"
+
+# Install ML system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install ML-specific requirements
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir \
+    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
+
+COPY --chown=root:root ml/ ./ml/
+COPY --chown=root:root data/ ./data/
+COPY --chown=root:root scripts/ ./scripts/
+
+# DVC for data versioning
+RUN pip install dvc dvc-s3
+
+ENV PYTHONPATH=/app
+ENV MLFLOW_TRACKING_URI=http://mlflow:5000
+
+CMD ["python", "-m", "ml.training.train_all"]
