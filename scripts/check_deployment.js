@@ -1,0 +1,40 @@
+const {chromium,expect}=require('@playwright/test');
+const fs=require('fs');
+(async()=>{
+  const browser=await chromium.launch({channel:process.env.NEXUS_TEST_BROWSER || 'chrome',headless:true});
+  try {
+    const page=await browser.newPage({viewport:{width:1440,height:1000}});
+    const errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    page.on('response',r=>{if(r.status()>=500)errors.push(`${r.status()} ${r.url()}`);});
+    await page.goto('http://localhost:3000/');
+    await page.getByLabel('Email address').fill(process.env.NEXUS_QA_EMAIL);
+    await page.getByLabel('Password',{exact:true}).fill(process.env.NEXUS_QA_PASSWORD);
+    await page.getByRole('button',{name:'Sign in',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'Command center',exact:true})).toBeVisible();
+    const status=await (await page.request.get('http://localhost:3000/api/v1/platform/status')).json();
+    expect(status.storage).toBe('PostgreSQL');
+    expect(status.sources).toHaveLength(3);
+    expect(status.worker.status).toBe('HEALTHY');
+    expect(status.models.demand.test.candidate.wape).toBeLessThan(status.models.demand.test.baseline.wape);
+    expect(status.purchase_orders.length).toBeGreaterThan(0);
+    fs.mkdirSync('docs/screenshots',{recursive:true});
+    await page.screenshot({path:'docs/screenshots/production-dashboard.png',fullPage:true});
+    await page.getByRole('button',{name:'Platform lab',exact:true}).click();
+    await page.getByRole('tab',{name:'Forecast lab',exact:true}).click();
+    await expect(page.getByText('5.92%',{exact:false}).first()).toBeVisible();
+    await expect(page.getByLabel('M5 store')).toHaveValue('m5:store:CA_1');
+    await expect(page.locator('.recharts-line-curve').first()).toBeVisible();
+    await page.screenshot({path:'docs/screenshots/trained-forecast.png',fullPage:true});
+    await page.getByRole('tab',{name:'Purchase orders',exact:true}).click();
+    await expect(page.getByText('ISSUED',{exact:true}).first()).toBeVisible();
+    await page.getByRole('tab',{name:'Agent runs',exact:true}).click();
+    await expect(page.getByText('LangGraph',{exact:false}).first()).toBeVisible();
+    await page.getByRole('tab',{name:'Monitoring',exact:true}).click();
+    await expect(page.getByText('HEALTHY',{exact:true}).first()).toBeVisible();
+    await page.screenshot({path:'docs/screenshots/monitoring.png',fullPage:true});
+    expect(errors).toEqual([]);
+    fs.writeFileSync('runtime/artifacts/deployment_verification.json',JSON.stringify({verified_at:new Date().toISOString(),browser:'Chrome',frontend:'production Docker standalone',sources:status.sources.length,worker:status.worker.status,storage:status.storage,checks:['authentication through Next.js proxy','trained forecast display','purchase orders','LangGraph runs','monitoring','no browser or server errors']},null,2));
+    console.log('Production browser verification passed. Temporary QA account will be removed.');
+  } finally {await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

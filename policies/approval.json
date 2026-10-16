@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "execution_mode": "SIMULATION",
+  "auto_approve_max_usd": 10000,
+  "minimum_confidence": 0.85,
+  "maximum_delay_probability": 0.5,
+  "executive_review_min_usd": 100000,
+  "max_plan_value_usd": 5000000,
+  "critical_requires_human": true,
+  "allowed_actions": ["PURCHASE_ORDER", "REROUTE", "INVENTORY_TRANSFER"]
+}

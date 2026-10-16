@@ -117,6 +117,97 @@ const genKPIs=()=>({
   trCost:+rnd(2.3,2.8).toFixed(2),stRisk:+rnd(3.2,5.1).toFixed(1),
   supRel:+rnd(87,92).toFixed(1),delRisk:+rnd(16,22).toFixed(1),
 });
+
+const normalizeKPIs=(data)=>({
+  otif:Number(data?.otif ?? 0),
+  fill:Number(data?.fill_rate ?? 0),
+  invTurn:Number(data?.inventory_turnover ?? 0),
+  whUtil:Number(data?.warehouse_utilization ?? 0),
+  trCost:Number(data?.transport_cost_per_unit ?? 0),
+  stRisk:Number(data?.stockout_probability ?? 0),
+  supRel:Number(data?.supplier_reliability ?? 0),
+  delRisk:Number(data?.delay_risk ?? 0),
+});
+
+const normalizeAgents=(payload)=>{
+  const rows=Array.isArray(payload) ? payload : (Array.isArray(payload?.agents) ? payload.agents : []);
+  return rows.map((item,index)=>{
+    const fallback=AGENTS.find(a=>a.id===item?.id) || AGENTS[index] || AGENTS[0];
+    const rawConfidence=Number(item?.confidence ?? item?.confidence_score ?? item?.conf ?? fallback?.conf ?? 0);
+    const conf=rawConfidence<=1 ? Math.round(rawConfidence*100) : Math.round(rawConfidence);
+    return {
+      id:item?.id ?? item?.agent_id ?? fallback?.id ?? `AG${index+1}`,
+      name:item?.name ?? item?.agent_name ?? item?.agent_type ?? fallback?.name ?? `Agent ${index+1}`,
+      sts:String(item?.status ?? item?.state ?? item?.sts ?? fallback?.sts ?? "IDLE").toUpperCase(),
+      task:item?.task ?? item?.current_task ?? item?.description ?? fallback?.task ?? "Monitoring supply chain operations",
+      decisions:Number(item?.decisions ?? item?.decisions_today ?? item?.decision_count ?? fallback?.decisions ?? 0),
+      conf:Math.max(0,Math.min(100,conf)),
+      col:fallback?.col ?? C.sky,
+    };
+  });
+};
+
+const agentLabel=(value)=>{
+  const aliases={PLANNER:"Planner Agent",INVENTORY:"Inventory Agent",LOGISTICS:"Logistics Agent",SUPPLIER_RISK:"Supplier Risk Agent",DEMAND_FORECAST:"Demand Forecasting",ESCALATION:"Escalation Agent",KPI_MONITOR:"KPI Monitor Agent",EXECUTIVE_SUMMARY:"Executive Summary"};
+  const key=String(value ?? "").toUpperCase();
+  if(aliases[key]) return aliases[key];
+  const raw=String(value ?? "Agent").replace(/^AGENT_?/i,"").replace(/_/g," ").trim();
+  return raw.replace(/\b\w/g,char=>char.toUpperCase()) || "Agent";
+};
+
+const normalizeDecision=(item,index)=>{
+  const rawConfidence=Number(item?.confidence ?? item?.conf ?? item?.confidence_score ?? 0);
+  const conf=Math.max(0,Math.min(100,Math.round(rawConfidence<=1 ? rawConfidence*100 : rawConfidence)));
+
+  const rawStatus=String(
+    item?.status ?? item?.decision_status ?? item?.state ?? "PROPOSED"
+  ).toUpperCase();
+
+  const statusMap={
+    AUTO_APPROVED:"AUTO-APPROVED",
+    PENDING_HUMAN:"HUMAN REQUIRED",
+    HUMAN_REQUIRED:"HUMAN REQUIRED",
+    HUMAN_APPROVED:"HUMAN APPROVED",
+    HUMAN_REJECTED:"HUMAN REJECTED",
+    EXECUTED:"EXECUTED",
+    FAILED:"FAILED",
+    PROPOSED:"PENDING",
+    PENDING:"PENDING"
+  };
+
+  const timestamp=item?.timestamp ?? item?.created_at ?? item?.processed_at ?? item?.updated_at;
+  let time="--:--";
+  if(timestamp){
+    const parsed=new Date(timestamp);
+    if(!Number.isNaN(parsed.getTime())){
+      time=parsed.toLocaleTimeString("en-US",{
+        hour:"2-digit",
+        minute:"2-digit",
+        hour12:false
+      });
+    }
+  }
+
+  const requiresApproval=
+    Boolean(item?.requires_human_approval) ||
+    rawStatus==="PENDING_HUMAN" ||
+    rawStatus==="HUMAN_REQUIRED" ||
+    rawStatus==="PROPOSED" ||
+    rawStatus==="PENDING";
+
+  return {
+    id:String(item?.decision_id ?? item?.id ?? `DEC-${index+1}`),
+    agent:agentLabel(item?.agent_type ?? item?.agent_name ?? item?.agent),
+    action:String(item?.action ?? item?.decision_type ?? "Decision generated"),
+    conf,
+    status:statusMap[rawStatus] ?? rawStatus.replace(/_/g,"-"),
+    rawStatus,
+    time,
+    value:Number(item?.estimated_value_usd ?? item?.value_usd ?? item?.value ?? 0),
+    reasoning:item?.reasoning ?? "",
+    requiresApproval
+  };
+};
 const genInvHist=()=>Array.from({length:14},(_,i)=>({
   d:`W${Math.floor(i/2)+45}D${(i%2)+1}`,
   actual:Math.round(rnd(35000,55000)),target:45000,safety:15000,
@@ -229,7 +320,7 @@ const SCMap=()=>{
 // ═══════════════════════════════════════════════════════════
 // DASHBOARD VIEW
 // ═══════════════════════════════════════════════════════════
-const DashboardView=({kpis,events,forecast,kpi24h})=>{
+const DashboardView=({kpis,events,forecast,kpi24h,agents})=>{
   const kpiCards=[
     {label:"OTIF Score",val:kpis.otif+"%",delta:-2.1,col:kpis.otif>90?C.green:C.amber},
     {label:"Fill Rate",val:kpis.fill+"%",delta:+0.3,col:C.green},
@@ -282,7 +373,7 @@ const DashboardView=({kpis,events,forecast,kpi24h})=>{
           <div style={{background:C.bg1,border:`1px solid ${C.bd1}`,borderRadius:12,padding:12,flex:1,overflow:"hidden"}}>
             <div style={{fontFamily:C.ffD,fontSize:12,fontWeight:700,letterSpacing:"0.1em",
               color:C.t1,textTransform:"uppercase",marginBottom:8}}>AI Agent Status</div>
-            {AGENTS.map(a=>(
+            {agents.map(a=>(
               <div key={a.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 0",borderBottom:`1px solid ${C.bg3}`}}>
                 <Dot color={sts2c(a.sts)} size={6}/>
                 <div style={{flex:1,minWidth:0}}>
@@ -353,53 +444,147 @@ const DashboardView=({kpis,events,forecast,kpi24h})=>{
 // ═══════════════════════════════════════════════════════════
 // AGENTS VIEW
 // ═══════════════════════════════════════════════════════════
-const AgentsView=()=>{
+const AgentsView=({agents})=>{
   const [sel,setSel]=useState(null);
+  const [decisions,setDecisions]=useState([]);
+  const [decisionsLoading,setDecisionsLoading]=useState(true);
+  const [approvingId,setApprovingId]=useState(null);
+  const [decisionError,setDecisionError]=useState("");
+  const [approvedOverrides,setApprovedOverrides]=useState({});
+
+  const loadDecisions=async()=>{
+    try{
+      const response=await fetch("http://localhost:8000/api/v1/agents/decisions?limit=20",{method:"GET",headers:{Accept:"application/json"}});
+      if(!response.ok) throw new Error(`Decision API returned ${response.status}`);
+      const data=await response.json();
+      const rows=Array.isArray(data) ? data : (Array.isArray(data?.decisions) ? data.decisions : []);
+      const normalized=rows.map(normalizeDecision);
+      setDecisions(normalized.map(decision=>{
+        const override=approvedOverrides[decision.id];
+        return override ? {...decision,...override} : decision;
+      }));
+      setDecisionError("");
+    }catch(error){
+      console.error("Failed to load agent decisions:",error);
+      setDecisionError("LIVE API UNAVAILABLE");
+      setDecisions(DECISIONS.map(normalizeDecision));
+    }finally{setDecisionsLoading(false);}
+  };
+
+  useEffect(()=>{
+    let cancelled=false;
+    const load=async()=>{if(!cancelled) await loadDecisions();};
+    load();
+    const interval=setInterval(load,5000);
+    return()=>{cancelled=true;clearInterval(interval);};
+  },[approvedOverrides]);
+
+  const approveDecision=async(decisionId)=>{
+    if(!decisionId || approvingId) return;
+    setApprovingId(decisionId);
+    setDecisionError("");
+    try{
+      const response=await fetch(`http://localhost:8000/api/v1/agents/decision/${encodeURIComponent(decisionId)}/approve`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json",Accept:"application/json"},
+        body:JSON.stringify({approved:true,approver:"NEXUS Control Tower Operator",reason:"Approved from the NEXUS Control Tower dashboard"}),
+      });
+      if(!response.ok){const body=await response.text();throw new Error(`Approval API returned ${response.status}: ${body}`);}
+      const result=await response.json();
+      const returnedStatus=String(result?.status ?? "HUMAN_APPROVED").toUpperCase();
+      const override={
+        status:returnedStatus==="HUMAN_APPROVED"?"HUMAN APPROVED":returnedStatus.replace(/_/g,"-"),
+        rawStatus:returnedStatus,
+        requiresApproval:false
+      };
+      setApprovedOverrides(previous=>({...previous,[decisionId]:override}));
+      setDecisions(previous=>previous.map(decision=>
+        decision.id===decisionId ? {...decision,...override} : decision
+      ));
+      setTimeout(loadDecisions,500);
+    }catch(error){
+      console.error("Failed to approve decision:",error);
+      setDecisionError(error.message || "APPROVAL FAILED");
+    }finally{setApprovingId(null);}
+  };
+
+  const rejectDecision=async(decisionId)=>{
+    if(!decisionId || approvingId) return;
+    setApprovingId(decisionId);
+    setDecisionError("");
+    try{
+      const response=await fetch(`http://localhost:8000/api/v1/agents/decision/${encodeURIComponent(decisionId)}/approve`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json",Accept:"application/json"},
+        body:JSON.stringify({approved:false,approver:"NEXUS Control Tower Operator",reason:"Rejected from the NEXUS Control Tower dashboard"}),
+      });
+      if(!response.ok){const body=await response.text();throw new Error(`Rejection API returned ${response.status}: ${body}`);}
+      const result=await response.json();
+      const returnedStatus=String(result?.status ?? "HUMAN_REJECTED").toUpperCase();
+      const override={
+        status:returnedStatus==="HUMAN_REJECTED"?"HUMAN REJECTED":returnedStatus.replace(/_/g,"-"),
+        rawStatus:returnedStatus,
+        requiresApproval:false
+      };
+      setApprovedOverrides(previous=>({...previous,[decisionId]:override}));
+      setDecisions(previous=>previous.map(decision=>
+        decision.id===decisionId ? {...decision,...override} : decision
+      ));
+      setTimeout(loadDecisions,500);
+    }catch(error){
+      console.error("Failed to reject decision:",error);
+      setDecisionError(error.message || "REJECTION FAILED");
+    }finally{setApprovingId(null);}
+  };
+
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
-        {AGENTS.map(a=>(
-          <div key={a.id} onClick={()=>setSel(sel?.id===a.id?null:a)} style={{
-            background:sel?.id===a.id?C.bg3:C.bg1,
-            border:`1px solid ${sel?.id===a.id?a.col+"70":C.bd1}`,
-            borderRadius:10,padding:14,cursor:"pointer",
-            borderLeft:`3px solid ${a.col}`,transition:"all 0.15s"}}>
+        {agents.map(a=>(
+          <div key={a.id} onClick={()=>setSel(sel?.id===a.id?null:a)} style={{background:sel?.id===a.id?C.bg3:C.bg1,border:`1px solid ${sel?.id===a.id?a.col+"70":C.bd1}`,borderRadius:10,padding:14,cursor:"pointer",borderLeft:`3px solid ${a.col}`,transition:"all 0.15s"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <div style={{display:"flex",alignItems:"center",gap:7}}>
-                <Dot color={sts2c(a.sts)} size={7}/>
-                <span style={{fontSize:11,fontWeight:700,color:C.t1,fontFamily:C.ffD}}>{a.name}</span>
-              </div>
+              <div style={{display:"flex",alignItems:"center",gap:7}}><Dot color={sts2c(a.sts)} size={7}/><span style={{fontSize:11,fontWeight:700,color:C.t1,fontFamily:C.ffD}}>{a.name}</span></div>
               <Chip label={a.sts} color={sts2c(a.sts)}/>
             </div>
             <div style={{fontSize:10,color:C.t2,marginBottom:8,lineHeight:1.4,fontFamily:C.ffM}}>{a.task}</div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.t3,fontFamily:C.ffM,marginBottom:6}}>
-              <span>Decisions: <span style={{color:a.col,fontWeight:700}}>{a.decisions}</span></span>
-              <span>Conf: <span style={{color:a.col,fontWeight:700}}>{a.conf}%</span></span>
-            </div>
-            <div style={{height:3,background:C.bg4,borderRadius:2}}>
-              <div style={{height:"100%",width:`${a.conf}%`,background:a.col,borderRadius:2}}/>
-            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.t3,fontFamily:C.ffM,marginBottom:6}}><span>Decisions: <span style={{color:a.col,fontWeight:700}}>{a.decisions}</span></span><span>Conf: <span style={{color:a.col,fontWeight:700}}>{a.conf}%</span></span></div>
+            <div style={{height:3,background:C.bg4,borderRadius:2}}><div style={{height:"100%",width:`${a.conf}%`,background:a.col,borderRadius:2}}/></div>
           </div>
         ))}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         <div style={{background:C.bg1,border:`1px solid ${C.bd1}`,borderRadius:12,padding:14}}>
-          <div style={{fontFamily:C.ffD,fontSize:13,fontWeight:700,letterSpacing:"0.08em",
-            color:C.t1,textTransform:"uppercase",marginBottom:12}}>Autonomous Decision Log</div>
-          {DECISIONS.map(d=>(
-            <div key={d.id} style={{padding:"10px 12px",borderRadius:8,marginBottom:8,
-              background:C.bg2,border:`1px solid ${C.bd1}`}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                <Chip label={d.agent} color={C.sky}/>
-                <Chip label={d.status} color={d.status==="AUTO-APPROVED"?C.green:d.status==="HUMAN REQUIRED"?C.red:C.amber}/>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div style={{fontFamily:C.ffD,fontSize:13,fontWeight:700,letterSpacing:"0.08em",color:C.t1,textTransform:"uppercase"}}>Autonomous Decision Log</div>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>{decisionError&&<span style={{fontSize:8,color:C.amber,fontFamily:C.ffM,maxWidth:170,textAlign:"right"}}>{decisionError}</span>}<Chip label={decisionsLoading?"LOADING":`${decisions.length} LIVE`} color={decisionsLoading?C.amber:C.green}/></div>
+          </div>
+          {decisions.length===0&&!decisionsLoading&&<div style={{padding:20,textAlign:"center",color:C.t3,fontSize:10,fontFamily:C.ffM}}>No agent decisions available.</div>}
+          {decisions.map(d=>{
+            const statusColor=(d.status==="AUTO-APPROVED"||d.status==="HUMAN APPROVED"||d.status==="EXECUTED")?C.green:(d.status==="HUMAN REQUIRED"||d.status==="FAILED"||d.status==="HUMAN REJECTED")?C.red:C.amber;
+            return(
+              <div key={d.id} style={{padding:"10px 12px",borderRadius:8,marginBottom:8,background:C.bg2,border:`1px solid ${C.bd1}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5,gap:8}}>
+                  <Chip label={d.agent} color={C.sky}/>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}><Chip label={d.status} color={statusColor}/>{d.requiresApproval &&
+                   d.rawStatus!=="HUMAN_APPROVED" &&
+                   d.rawStatus!=="HUMAN_REJECTED" &&
+                   d.rawStatus!=="EXECUTED" && (
+                     <>
+                       <button onClick={(event)=>{event.stopPropagation();approveDecision(d.id);}} disabled={approvingId===d.id} style={{padding:"3px 8px",borderRadius:4,border:`1px solid ${C.green}70`,background:`${C.green}12`,color:C.green,fontSize:8,fontWeight:700,fontFamily:C.ffM,cursor:approvingId===d.id?"wait":"pointer",opacity:approvingId===d.id?0.6:1}}>
+                         {approvingId===d.id?"APPROVING...":"APPROVE"}
+                       </button>
+                       <button onClick={(event)=>{event.stopPropagation();rejectDecision(d.id);}} disabled={approvingId===d.id} style={{padding:"3px 8px",borderRadius:4,border:`1px solid ${C.red}70`,background:`${C.red}12`,color:C.red,fontSize:8,fontWeight:700,fontFamily:C.ffM,cursor:approvingId===d.id?"wait":"pointer",opacity:approvingId===d.id?0.6:1}}>
+                         {approvingId===d.id?"PROCESSING...":"REJECT"}
+                       </button>
+                     </>
+                   )}</div>
+                </div>
+                <div style={{fontSize:11,color:C.t1,margin:"5px 0"}}>{d.action}</div>
+                {d.value>0&&<div style={{fontSize:9,color:C.t3,fontFamily:C.ffM,marginBottom:4}}>Value: <span style={{color:C.amber}}>${d.value.toLocaleString()}</span></div>}
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.t3,fontFamily:C.ffM}}><span>Confidence: <span style={{color:C.sky}}>{d.conf}%</span></span><span>{d.time}</span></div>
               </div>
-              <div style={{fontSize:11,color:C.t1,margin:"5px 0"}}>{d.action}</div>
-              <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.t3,fontFamily:C.ffM}}>
-                <span>Confidence: <span style={{color:C.sky}}>{d.conf}%</span></span>
-                <span>{d.time}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <div style={{background:C.bg1,border:`1px solid ${C.bd1}`,borderRadius:12,padding:14}}>
           <div style={{fontFamily:C.ffD,fontSize:13,fontWeight:700,letterSpacing:"0.08em",
@@ -438,7 +623,6 @@ const AgentsView=()=>{
     </div>
   );
 };
-
 // ═══════════════════════════════════════════════════════════
 // INVENTORY VIEW
 // ═══════════════════════════════════════════════════════════
@@ -818,140 +1002,456 @@ const DigitalTwinView=()=>{
 // ═══════════════════════════════════════════════════════════
 // AI COPILOT VIEW
 // ═══════════════════════════════════════════════════════════
-const SYS=`You are ARIA (Autonomous Route & Inventory Assistant), the AI Executive Copilot for an enterprise Supply Chain Control Tower. You have deep expertise in supply chain management, logistics optimization, inventory control, and risk assessment.
-
-Current Platform State:
-- 10 global suppliers across APAC/EMEA/LATAM/Americas
-- 8 warehouses: Chicago (78%), Dallas CRITICAL (91%), Atlanta (64%), Seattle (55%), Frankfurt (82%), Amsterdam (71%), Singapore WH (88%), Dubai (67%)
-- 3 ACTIVE DISRUPTIONS: Taiwan Strait restriction (CRITICAL), Typhoon Haikui (HIGH), Shenzhen factory shutdown (HIGH)
-- OTIF: 87.3% (below 90% target) | Fill Rate: 94.2% | WH Utilization: 79% avg
-- 8 AI agents active: Planner, Inventory, Logistics, Supplier Risk, Demand Forecasting, Escalation, KPI Monitor, Executive Summary
-- Black Friday demand spike forecast: +340% in 30 days
-- 2 decisions pending human approval ($8.7M threshold)
-- Shenzhen Electronics (S001) risk score dropped to 32/100 — critical
-
-Provide concise, actionable supply chain intelligence in an enterprise-grade tone. Use specific numbers. Be direct and decisive. Keep responses under 220 words unless detailed analysis is explicitly requested. Use **bold** for key metrics.`;
-
 const CopilotView=()=>{
   const [msgs,setMsgs]=useState([
-    {role:"assistant",content:"Good afternoon. I'm **ARIA**, your Supply Chain AI Copilot.\n\nCurrently monitoring **3 active disruptions** with OTIF at **87.3%** (below 90% target). Dallas DC is at **91% capacity** — critical threshold breached. Two decisions worth $8.7M are awaiting your approval.\n\nHow can I help you optimize operations today?"}
+    {
+      role:"assistant",
+      content:"Good afternoon. I'm **ARIA**, your Supply Chain AI Copilot.\n\nI am connected to the NEXUS backend and can answer questions using live KPIs, agent status, decisions, inventory, and supplier-risk data.\n\nAsk me about the current supply-chain situation, pending approvals, suppliers, inventory, or operational KPIs."
+    }
   ]);
   const [inp,setInp]=useState("");
   const [typing,setTyping]=useState(false);
-  const chatRef=useRef(null);
+  const [chatRef]=useState(()=>({current:null}));
+  const [context,setContext]=useState({
+    otif:null,
+    fill_rate:null,
+    pending_decisions:null,
+    active_agents:null,
+    total_agents:null,
+    stockout_probability:null,
+    warehouse_utilization:null,
+    supplier_reliability:null,
+  });
+  const [sources,setSources]=useState([]);
+
   const QUICK=[
     "What are the top 3 risks right now?",
-    "How should I respond to the Typhoon disruption?",
-    "Explain the Dallas warehouse situation",
-    "Black Friday readiness assessment?",
-    "Summarize today's autonomous decisions",
+    "How is OTIF performing?",
+    "What decisions are waiting for approval?",
+    "Explain the current inventory situation",
     "Which suppliers should I review?",
+    "Give me an overall supply chain summary",
   ];
-  useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},[msgs]);
+
+  useEffect(()=>{
+    if(chatRef.current){
+      chatRef.current.scrollTop=chatRef.current.scrollHeight;
+    }
+  },[msgs,typing]);
+
   const send=async(text)=>{
-    const m=text||inp.trim();if(!m||typing)return;
+    const m=text||inp.trim();
+    if(!m||typing)return;
+
     setInp("");
-    const next=[...msgs,{role:"user",content:m}];
-    setMsgs(next);setTyping(true);
+    setMsgs(p=>[...p,{role:"user",content:m}]);
+    setTyping(true);
+
     try{
-      const r=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,
-          messages:next.map(x=>({role:x.role,content:x.content}))})
-      });
-      const d=await r.json();
-      setMsgs(p=>[...p,{role:"assistant",content:d.content?.[0]?.text||"Unable to process."}]);
-    }catch{
-      setMsgs(p=>[...p,{role:"assistant",content:"Connection error. Please check your network."}]);
-    }finally{setTyping(false);}
+      const response=await fetch(
+        "http://localhost:8000/api/v1/copilot/chat",
+        {
+          method:"POST",
+          headers:{
+            "Accept":"application/json",
+            "Content-Type":"application/json",
+          },
+          body:JSON.stringify({message:m}),
+        }
+      );
+
+      if(!response.ok){
+        const errorText=await response.text();
+        throw new Error(
+          `Copilot API returned ${response.status}: ${errorText}`
+        );
+      }
+
+      const data=await response.json();
+
+      setMsgs(p=>[
+        ...p,
+        {
+          role:"assistant",
+          content:data.answer||"I could not generate an answer from the current NEXUS data."
+        }
+      ]);
+
+      if(data.context){
+        setContext(data.context);
+      }
+
+      if(Array.isArray(data.sources)){
+        setSources(data.sources);
+      }
+    }catch(error){
+      console.error("[NEXUS] Copilot request failed:",error);
+
+      setMsgs(p=>[
+        ...p,
+        {
+          role:"assistant",
+          content:"**Copilot connection error.** I could not reach the NEXUS backend. Please make sure the FastAPI server is running on `localhost:8000`."
+        }
+      ]);
+    }finally{
+      setTyping(false);
+    }
   };
-  const fmtMsg=(txt)=>txt.split(/(\*\*[^*]+\*\*)/).map((p,i)=>
-    p.startsWith("**")&&p.endsWith("**")
-      ?<strong key={i} style={{color:C.sky}}>{p.slice(2,-2)}</strong>
-      :p
-  );
+
+  const fmtMsg=(txt)=>{
+    return String(txt||"").split(/(\*\*[^*]+\*\*)/).map((p,i)=>
+      p.startsWith("**")&&p.endsWith("**")
+        ?<strong key={i} style={{color:C.sky}}>{p.slice(2,-2)}</strong>
+        :p
+    );
+  };
+
+  const fmtPct=(value)=>{
+    if(value===null||value===undefined||Number.isNaN(Number(value)))return "—";
+    return `${Number(value).toFixed(1)}%`;
+  };
+
+  const fmtInt=(value)=>{
+    if(value===null||value===undefined||Number.isNaN(Number(value)))return "—";
+    return Number(value).toLocaleString();
+  };
+
   return(
     <div style={{display:"flex",gap:12,height:"calc(100vh - 160px)"}}>
-      <div style={{flex:1,display:"flex",flexDirection:"column",gap:10}}>
-        <div style={{background:C.bg1,border:`1px solid ${C.bd1}`,borderRadius:12,padding:"10px 14px",
-          display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:36,height:36,borderRadius:"50%",background:`${C.cyan}20`,border:`2px solid ${C.cyan}`,
-            display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>⬡</div>
+
+      <div style={{flex:1,display:"flex",flexDirection:"column",gap:10,minWidth:0}}>
+
+        {/* COPILOT HEADER */}
+        <div style={{
+          background:C.bg1,
+          border:`1px solid ${C.bd1}`,
+          borderRadius:12,
+          padding:"10px 14px",
+          display:"flex",
+          alignItems:"center",
+          gap:10
+        }}>
+          <div style={{
+            width:36,
+            height:36,
+            borderRadius:"50%",
+            background:`${C.cyan}20`,
+            border:`2px solid ${C.cyan}`,
+            display:"flex",
+            alignItems:"center",
+            justifyContent:"center",
+            fontSize:14
+          }}>⬡</div>
+
           <div>
-            <div style={{fontFamily:C.ffD,fontSize:14,fontWeight:700,color:C.cyan,letterSpacing:"0.05em"}}>ARIA — Supply Chain AI Copilot</div>
-            <div style={{fontSize:10,color:C.t3,fontFamily:C.ffM}}>claude-sonnet-4 · Monitoring 3 disruptions · 8 agents active</div>
+            <div style={{
+              fontFamily:C.ffD,
+              fontSize:14,
+              fontWeight:700,
+              color:C.cyan,
+              letterSpacing:"0.05em"
+            }}>
+              ARIA — Supply Chain AI Copilot
+            </div>
+            <div style={{
+              fontSize:10,
+              color:C.t3,
+              fontFamily:C.ffM
+            }}>
+              NEXUS backend · Live operational data · Grounded responses
+            </div>
           </div>
-          <div style={{marginLeft:"auto",display:"flex",gap:8}}>
-            <Dot color={C.green} size={8}/><span style={{fontSize:10,color:C.t2,fontFamily:C.ffM}}>CONNECTED</span>
+
+          <div style={{marginLeft:"auto",display:"flex",gap:8,alignItems:"center"}}>
+            <Dot color={C.green} size={8}/>
+            <span style={{fontSize:10,color:C.t2,fontFamily:C.ffM}}>
+              CONNECTED
+            </span>
           </div>
         </div>
-        <div ref={chatRef} style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:10}}>
+
+        {/* CHAT */}
+        <div
+          ref={chatRef}
+          style={{
+            flex:1,
+            overflowY:"auto",
+            display:"flex",
+            flexDirection:"column",
+            gap:10,
+            paddingRight:4
+          }}
+        >
           {msgs.map((m,i)=>(
-            <div key={i} style={{display:"flex",gap:10,alignItems:"flex-start",flexDirection:m.role==="user"?"row-reverse":"row"}}>
-              <div style={{width:30,height:30,borderRadius:"50%",flexShrink:0,
+            <div
+              key={i}
+              style={{
+                display:"flex",
+                gap:10,
+                alignItems:"flex-start",
+                flexDirection:m.role==="user"?"row-reverse":"row"
+              }}
+            >
+              <div style={{
+                width:30,
+                height:30,
+                borderRadius:"50%",
+                flexShrink:0,
                 background:m.role==="assistant"?`${C.cyan}20`:`${C.sky}20`,
                 border:`1px solid ${m.role==="assistant"?C.cyan:C.sky}`,
-                display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>
+                display:"flex",
+                alignItems:"center",
+                justifyContent:"center",
+                fontSize:12
+              }}>
                 {m.role==="assistant"?"⬡":"◎"}
               </div>
-              <div style={{maxWidth:"80%",background:m.role==="assistant"?C.bg2:C.bg3,
+
+              <div style={{
+                maxWidth:"80%",
+                background:m.role==="assistant"?C.bg2:C.bg3,
                 border:`1px solid ${m.role==="assistant"?C.bd1:C.bd2}`,
                 borderRadius:m.role==="assistant"?"4px 12px 12px 12px":"12px 4px 12px 12px",
-                padding:"10px 14px",fontSize:13,color:C.t1,lineHeight:1.6,fontFamily:C.ff,
-                whiteSpace:"pre-wrap"}}>
+                padding:"10px 14px",
+                fontSize:13,
+                color:C.t1,
+                lineHeight:1.6,
+                fontFamily:C.ff,
+                whiteSpace:"pre-wrap"
+              }}>
                 {fmtMsg(m.content)}
               </div>
             </div>
           ))}
+
           {typing&&(
             <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-              <div style={{width:30,height:30,borderRadius:"50%",background:`${C.cyan}20`,
-                border:`1px solid ${C.cyan}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>⬡</div>
-              <div style={{background:C.bg2,border:`1px solid ${C.bd1}`,borderRadius:"4px 12px 12px 12px",
-                padding:"12px 16px",display:"flex",gap:6,alignItems:"center"}}>
+              <div style={{
+                width:30,
+                height:30,
+                borderRadius:"50%",
+                background:`${C.cyan}20`,
+                border:`1px solid ${C.cyan}`,
+                display:"flex",
+                alignItems:"center",
+                justifyContent:"center",
+                fontSize:12
+              }}>⬡</div>
+
+              <div style={{
+                background:C.bg2,
+                border:`1px solid ${C.bd1}`,
+                borderRadius:"4px 12px 12px 12px",
+                padding:"12px 16px",
+                display:"flex",
+                gap:6,
+                alignItems:"center"
+              }}>
                 {[0,1,2].map(i=>(
-                  <span key={i} style={{width:6,height:6,borderRadius:"50%",background:C.cyan,
-                    animation:`pulse 1.2s ease-in-out ${i*0.2}s infinite`}}/>
+                  <span
+                    key={i}
+                    style={{
+                      width:6,
+                      height:6,
+                      borderRadius:"50%",
+                      background:C.cyan,
+                      animation:`pulse 1.2s ease-in-out ${i*0.2}s infinite`
+                    }}
+                  />
                 ))}
               </div>
             </div>
           )}
         </div>
+
+        {/* INPUT */}
         <div style={{display:"flex",gap:10}}>
-          <input value={inp} onChange={e=>setInp(e.target.value)}
-            onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&(e.preventDefault(),send())}
+          <input
+            value={inp}
+            onChange={e=>setInp(e.target.value)}
+            onKeyDown={e=>{
+              if(e.key==="Enter"&&!e.shiftKey){
+                e.preventDefault();
+                send();
+              }
+            }}
             placeholder="Ask ARIA about supply chain status, risks, or recommendations..."
-            style={{flex:1,background:C.bg2,border:`1px solid ${C.bd2}`,borderRadius:8,
-              padding:"10px 14px",color:C.t1,fontSize:12,fontFamily:C.ff,outline:"none"}}/>
-          <button onClick={()=>send()} disabled={typing||!inp.trim()} style={{
-            padding:"10px 20px",borderRadius:8,background:typing?C.bg3:`${C.sky}20`,
-            border:`1px solid ${typing?C.bd1:C.sky}`,color:typing?C.t4:C.sky,
-            fontSize:11,cursor:typing?"not-allowed":"pointer",fontFamily:C.ffM,fontWeight:700}}>
+            style={{
+              flex:1,
+              background:C.bg2,
+              border:`1px solid ${C.bd2}`,
+              borderRadius:8,
+              padding:"10px 14px",
+              color:C.t1,
+              fontSize:12,
+              fontFamily:C.ff,
+              outline:"none"
+            }}
+          />
+
+          <button
+            onClick={()=>send()}
+            disabled={typing||!inp.trim()}
+            style={{
+              padding:"10px 20px",
+              borderRadius:8,
+              background:typing?C.bg3:`${C.sky}20`,
+              border:`1px solid ${typing?C.bd1:C.sky}`,
+              color:typing?C.t4:C.sky,
+              fontSize:11,
+              cursor:typing?"not-allowed":"pointer",
+              fontFamily:C.ffM,
+              fontWeight:700
+            }}
+          >
             {typing?"...":"SEND"}
           </button>
         </div>
       </div>
-      <div style={{width:220,display:"flex",flexDirection:"column",gap:10}}>
-        <div style={{background:C.bg1,border:`1px solid ${C.bd1}`,borderRadius:12,padding:14,flex:1}}>
-          <div style={{fontFamily:C.ffD,fontSize:12,fontWeight:700,letterSpacing:"0.1em",
-            color:C.t1,textTransform:"uppercase",marginBottom:12}}>Quick Actions</div>
+
+      {/* RIGHT PANEL */}
+      <div style={{width:250,display:"flex",flexDirection:"column",gap:10}}>
+
+        {/* QUICK ACTIONS */}
+        <div style={{
+          background:C.bg1,
+          border:`1px solid ${C.bd1}`,
+          borderRadius:12,
+          padding:14
+        }}>
+          <div style={{
+            fontFamily:C.ffD,
+            fontSize:12,
+            fontWeight:700,
+            letterSpacing:"0.1em",
+            color:C.t1,
+            textTransform:"uppercase",
+            marginBottom:12
+          }}>
+            Quick Actions
+          </div>
+
           {QUICK.map((q,i)=>(
-            <button key={i} onClick={()=>send(q)} style={{
-              width:"100%",textAlign:"left",padding:"8px 10px",borderRadius:7,
-              background:"transparent",border:`1px solid ${C.bd1}`,
-              color:C.t2,fontSize:10,cursor:"pointer",fontFamily:C.ff,
-              marginBottom:7,lineHeight:1.4,transition:"all 0.15s"}}>
+            <button
+              key={i}
+              onClick={()=>send(q)}
+              disabled={typing}
+              style={{
+                width:"100%",
+                textAlign:"left",
+                padding:"8px 10px",
+                borderRadius:7,
+                background:"transparent",
+                border:`1px solid ${C.bd1}`,
+                color:C.t2,
+                fontSize:10,
+                cursor:typing?"not-allowed":"pointer",
+                fontFamily:C.ff,
+                marginBottom:7,
+                lineHeight:1.4,
+                transition:"all 0.15s",
+                opacity:typing?0.6:1
+              }}
+            >
               {q}
             </button>
           ))}
-          <div style={{marginTop:14,padding:"10px 12px",background:C.bg2,borderRadius:8,border:`1px solid ${C.bd1}`}}>
-            <div style={{fontSize:9,color:C.t3,fontFamily:C.ffM,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>System Context</div>
-            {[["OTIF","87.3%",C.amber],["Disruptions","3 Active",C.red],["Decisions","2 Pending",C.amber],["Agents","8 Active",C.green]].map(([l,v,col])=>(
-              <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${C.bg3}`}}>
-                <span style={{fontSize:10,color:C.t3}}>{l}</span>
-                <span style={{fontSize:10,color:col,fontFamily:C.ffM,fontWeight:700}}>{v}</span>
+        </div>
+
+        {/* LIVE CONTEXT */}
+        <div style={{
+          background:C.bg1,
+          border:`1px solid ${C.bd1}`,
+          borderRadius:12,
+          padding:14,
+          flex:1,
+          overflowY:"auto"
+        }}>
+          <div style={{
+            fontSize:9,
+            color:C.t3,
+            fontFamily:C.ffM,
+            textTransform:"uppercase",
+            letterSpacing:"0.1em",
+            marginBottom:8
+          }}>
+            Live System Context
+          </div>
+
+          {[
+            ["OTIF",fmtPct(context.otif),C.amber],
+            ["Fill Rate",fmtPct(context.fill_rate),C.green],
+            ["Stockout Risk",fmtPct(context.stockout_probability),C.red],
+            ["WH Utilization",fmtPct(context.warehouse_utilization),C.sky],
+            ["Supplier Reliability",fmtPct(context.supplier_reliability),C.purple],
+            ["Pending Decisions",fmtInt(context.pending_decisions),C.amber],
+            ["Active Agents",context.total_agents==null?"—":`${fmtInt(context.active_agents)}/${fmtInt(context.total_agents)}`,C.green],
+          ].map(([label,value,col])=>(
+            <div
+              key={label}
+              style={{
+                display:"flex",
+                justifyContent:"space-between",
+                padding:"5px 0",
+                borderBottom:`1px solid ${C.bg3}`
+              }}
+            >
+              <span style={{fontSize:9,color:C.t3}}>{label}</span>
+              <span style={{fontSize:9,color:col,fontFamily:C.ffM,fontWeight:700}}>
+                {value}
+              </span>
+            </div>
+          ))}
+
+          {/* SOURCES */}
+          {sources.length>0&&(
+            <div style={{marginTop:14}}>
+              <div style={{
+                fontSize:9,
+                color:C.t3,
+                fontFamily:C.ffM,
+                textTransform:"uppercase",
+                letterSpacing:"0.1em",
+                marginBottom:8
+              }}>
+                Response Sources
               </div>
-            ))}
+
+              {sources.map((source,i)=>(
+                <div
+                  key={`${source}-${i}`}
+                  style={{
+                    display:"flex",
+                    gap:6,
+                    alignItems:"flex-start",
+                    padding:"5px 0",
+                    color:C.t2,
+                    fontFamily:C.ffM,
+                    fontSize:8,
+                    lineHeight:1.4
+                  }}
+                >
+                  <span style={{color:C.green}}>●</span>
+                  <span>{source}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{
+            marginTop:14,
+            padding:"9px 10px",
+            background:`${C.green}08`,
+            border:`1px solid ${C.green}30`,
+            borderRadius:7
+          }}>
+            <div style={{fontSize:8,color:C.green,fontFamily:C.ffM,fontWeight:700}}>
+              GROUNDED MODE
+            </div>
+            <div style={{fontSize:8,color:C.t3,fontFamily:C.ffM,lineHeight:1.5,marginTop:4}}>
+              Responses are generated from live NEXUS backend data. No browser-side API key is required.
+            </div>
           </div>
         </div>
       </div>
@@ -959,7 +1459,6 @@ const CopilotView=()=>{
   );
 };
 
-// ═══════════════════════════════════════════════════════════
 // ANALYTICS VIEW
 // ═══════════════════════════════════════════════════════════
 const AnalyticsView=({kpis,kpi24h})=>{
@@ -1064,8 +1563,18 @@ const NAV=[
 
 export default function App(){
   const [view,setView]=useState("dashboard");
-  const [kpis,setKpis]=useState(genKPIs);
+  const [kpis,setKpis]=useState({
+    otif:0,
+    fill:0,
+    invTurn:0,
+    whUtil:0,
+    trCost:0,
+    stRisk:0,
+    supRel:0,
+    delRisk:0,
+  });
   const [events,setEvents]=useState(EVENTS_INIT);
+  const [agents,setAgents]=useState(AGENTS);
   const [forecast]=useState(genForecast);
   const [kpi24h]=useState(genKPI24h);
   const [now,setNow]=useState(new Date());
@@ -1094,22 +1603,172 @@ export default function App(){
     return()=>{document.head.removeChild(link);document.head.removeChild(sty);};
   },[]);
 
-  // Real-time simulation
-  useEffect(()=>{
-    const interval=setInterval(()=>{
-      setKpis(genKPIs());
-      setNow(new Date());
-      if(Math.random()<0.4){
-        const ev=NEW_EVENTS_POOL[rndI(0,NEW_EVENTS_POOL.length)];
-        const hrs=String(new Date().getHours()).padStart(2,"0");
-        const min=String(new Date().getMinutes()).padStart(2,"0");
-        setEvents(p=>[{...ev,t:`${hrs}:${min}`},...p.slice(0,29)]);
+  // Real-time backend event stream
+useEffect(() => {
+  let ws = null;
+  let reconnectTimer = null;
+  let stopped = false;
+
+  const connect = () => {
+    if (stopped) return;
+
+    try {
+      ws = new WebSocket("ws://localhost:8000/ws/events");
+
+      ws.onopen = () => {
+        console.log("[NEXUS] Connected to backend event stream");
+      };
+
+      ws.onmessage = (message) => {
+        try {
+          const raw = JSON.parse(message.data);
+
+          console.log("[NEXUS] Event received:", raw);
+
+          const event = {
+            t:
+              raw.t ||
+              raw.time ||
+              raw.timestamp ||
+              new Date().toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+
+            type: String(
+              raw.type ||
+              raw.event_type ||
+              raw.eventType ||
+              "UPDATE"
+            ).toUpperCase(),
+
+            sev: String(
+              raw.sev ||
+              raw.severity ||
+              "LOW"
+            ).toUpperCase(),
+
+            msg:
+              raw.msg ||
+              raw.message ||
+              raw.description ||
+              raw.title ||
+              "Supply chain event received",
+
+            agent:
+              raw.agent ||
+              raw.agent_name ||
+              raw.source ||
+              "NEXUS Event Processor",
+          };
+
+          setEvents((previous) => [
+            event,
+            ...previous,
+          ].slice(0, 30));
+
+        } catch (error) {
+          console.error(
+            "[NEXUS] Invalid WebSocket message:",
+            message.data,
+            error
+          );
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error("[NEXUS] WebSocket error:", error);
+      };
+
+      ws.onclose = () => {
+        console.warn("[NEXUS] Event stream disconnected");
+
+        if (!stopped) {
+          reconnectTimer = setTimeout(() => {
+            console.log("[NEXUS] Reconnecting event stream...");
+            connect();
+          }, 3000);
+        }
+      };
+
+    } catch (error) {
+      console.error("[NEXUS] WebSocket connection failed:", error);
+
+      if (!stopped) {
+        reconnectTimer = setTimeout(connect, 3000);
       }
-    },5000);
-    return()=>clearInterval(interval);
+    }
+  };
+
+  connect();
+
+  return () => {
+    stopped = true;
+
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+    }
+
+    if (ws) {
+      ws.close();
+    }
+  };
+}, []);
+
+  // Real-time KPI updates from the FastAPI backend.
+  useEffect(()=>{
+    let cancelled=false;
+
+    const loadKPIs=async()=>{
+      try{
+        const response=await fetch("http://localhost:8000/api/v1/kpis/realtime",{
+          method:"GET",
+          headers:{"Accept":"application/json"},
+        });
+
+        if(!response.ok){
+          throw new Error(`KPI API returned ${response.status}`);
+        }
+
+        const data=await response.json();
+
+        if(!cancelled){
+          setKpis(normalizeKPIs(data));
+          setNow(new Date());
+        }
+      }catch(error){
+        console.error("Failed to load real-time KPIs:",error);
+      }
+    };
+
+    loadKPIs();
+
+    const interval=setInterval(loadKPIs,5000);
+
+    return()=>{
+      cancelled=true;
+      clearInterval(interval);
+    };
   },[]);
 
-  const activeAgent=AGENTS.filter(a=>a.sts==="ACTIVE"||a.sts==="ALERT").length;
+
+  // Real-time AI agent status from FastAPI.
+  useEffect(()=>{
+    let cancelled=false;
+    const loadAgentStatus=async()=>{
+      try{
+        const response=await fetch("http://localhost:8000/api/v1/agents/status",{method:"GET",headers:{Accept:"application/json"}});
+        if(!response.ok) throw new Error(`Agent API returned ${response.status}`);
+        const normalized=normalizeAgents(await response.json());
+        if(!cancelled && normalized.length>0) setAgents(normalized);
+      }catch(error){console.error("Failed to load real-time agent status:",error);}
+    };
+    loadAgentStatus();
+    const interval=setInterval(loadAgentStatus,5000);
+    return()=>{cancelled=true;clearInterval(interval);};
+  },[]);
+
+  const activeAgent=agents.filter(a=>a.sts==="ACTIVE"||a.sts==="ALERT"||a.sts==="PROCESSING").length;
 
   return(
     <div style={{display:"flex",flexDirection:"column",height:"100vh",
@@ -1187,8 +1846,8 @@ export default function App(){
 
         {/* MAIN CONTENT */}
         <div style={{flex:1,overflowY:"auto",padding:16,background:C.bg0}}>
-          {view==="dashboard"&&<DashboardView kpis={kpis} events={events} forecast={forecast} kpi24h={kpi24h}/>}
-          {view==="agents"&&<AgentsView/>}
+          {view==="dashboard"&&<DashboardView kpis={kpis} events={events} forecast={forecast} kpi24h={kpi24h} agents={agents}/>}
+          {view==="agents"&&<AgentsView agents={agents}/>}
           {view==="twin"&&<DigitalTwinView/>}
           {view==="inventory"&&<InventoryView/>}
           {view==="suppliers"&&<SuppliersView/>}

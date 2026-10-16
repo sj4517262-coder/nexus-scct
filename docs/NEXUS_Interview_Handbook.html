@@ -1,0 +1,1744 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="A self-contained NEXUS project interview handbook with architecture, models, reliable messaging, 60 interview answers and practical exercises."><title>NEXUS Project Interview Handbook</title><style>
+:root{--ink:#172b3b;--muted:#576b79;--teal:#087c75;--line:#dbe4e8;--paper:#fff;--nav:#102b3c;--bg:#eef3f5}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:88px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.75 "Segoe UI",Arial,sans-serif}a{color:#08756e}button,input{font:inherit}button{cursor:pointer;border:1px solid #bfd0d8;border-radius:7px;background:white;color:var(--ink);padding:8px 12px;font-size:13px;font-weight:600}button:hover{background:#e8f4f1}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #f0b95e;outline-offset:3px}nav{position:fixed;left:0;top:0;bottom:0;width:285px;background:var(--nav);color:white;padding:26px 20px;overflow-y:auto;z-index:15}nav .brand{font-size:23px;font-weight:750;letter-spacing:3px}nav .caption{font-size:12px;color:#a8c6d2;line-height:1.6;margin:4px 0 22px}nav label{font-size:12px;color:#cee0e8;display:block}nav input{width:100%;padding:10px 11px;background:#fff;border:0;border-radius:6px;margin:6px 0 8px;font-size:14px}#search-count{font-size:11px;color:#bdd5df;min-height:24px}nav a{display:block;color:#d9e7ee;text-decoration:none;border-radius:6px;margin:3px 0;padding:7px 9px;font-size:12px;line-height:1.5;border-left:3px solid transparent}nav a:hover,nav a.active{background:#22475a;border-left-color:#72d5c5;color:#fff}nav a.done:after{content:" ✓";color:#91dfc6}nav .progress{margin-top:16px;padding-top:16px;border-top:1px solid #36505f;font-size:12px;color:#d5e8ef}progress{width:100%;height:7px;accent-color:#59c6b0}.topbar{position:sticky;top:0;z-index:10;background:#ffffffed;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:12px 28px;margin-left:285px}.topbar .label{margin-right:auto;color:var(--muted);font-size:12px}main{margin-left:285px;padding:34px 32px 65px;max-width:1440px}.cover,.chapter{max-width:1000px;margin:0 auto 26px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:42px 48px;box-shadow:0 3px 10px #16324a04}.cover{padding-top:48px;background:linear-gradient(135deg,#fff 55%,#e9f5f0)}.eyebrow{font-size:11px;letter-spacing:2px;font-weight:700;text-transform:uppercase;color:var(--teal)}h1{font-size:44px;line-height:1.15;letter-spacing:-1.3px;margin:18px 0 20px;color:#102b3c;max-width:750px}.intro{font-size:19px;line-height:1.65;max-width:740px;color:#415969}.meta{font-size:12px;color:var(--muted);margin-top:20px}.chips{display:flex;gap:10px;flex-wrap:wrap;margin:28px 0}.chips span{background:#e8f4ee;padding:9px 13px;border-radius:6px;color:#155b50;font-size:13px;font-weight:650}.cover-note{border-left:3px solid var(--teal);padding:8px 0 8px 17px;font-size:14px;line-height:1.7}h2{font-size:27px;line-height:1.35;margin:0 0 25px;letter-spacing:-.4px;color:#173b4b}h3{font-size:19px;line-height:1.45;margin:28px 0 12px;color:#173b4b}p{margin:0 0 17px}ul,ol{margin:12px 0 22px;padding-left:25px}li{padding:3px 0}strong{font-weight:650;color:#172b3b}.table-scroll{overflow-x:auto;margin:21px 0 25px}table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.6}th{background:#173b4b;color:white;text-align:left;font-weight:600}th,td{border:1px solid #cfdae0;padding:11px 13px;vertical-align:top}tr:nth-child(even) td{background:#f2f7f8}code{background:#edf2f4;border-radius:4px;padding:2px 5px;font:13px/1.6 Consolas,"Courier New",monospace;overflow-wrap:anywhere}pre{background:#102b3c;color:#e7f1f5;border-radius:8px;padding:20px;overflow-x:auto;line-height:1.65;font-size:12px;margin:20px 0 24px}pre code{background:none;color:inherit;padding:0;border:0;white-space:pre;overflow-wrap:normal;font-size:12px}details.qa{border:1px solid #cddde2;border-radius:8px;margin:12px 0;background:#fff}summary{padding:15px 17px;font-weight:650;cursor:pointer;line-height:1.55;color:#174a52;font-size:15px}details[open] summary{background:#eef7f4;border-bottom:1px solid #d5e5df;border-radius:8px 8px 0 0}details.qa p,details.qa ul{margin:17px 19px 19px;font-size:15px}details.qa summary::marker{color:var(--teal)}.complete{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:18px;margin-top:32px;font-size:12px;color:var(--muted)}.complete input{accent-color:var(--teal);width:16px;height:16px;flex:none}.footer{max-width:1000px;margin:auto;text-align:center;color:var(--muted);font-size:12px}.mobile-menu{display:none}.mobile-close{display:none}body.study .chapter p,body.study .chapter li{font-size:17px}body.study .chapter{line-height:1.9}.chapter:target{outline:2px solid #8fc9bc}[hidden]{display:none!important}
+@media(max-width:1100px){nav{width:250px;padding:22px 15px}main,.topbar{margin-left:250px}main{padding:25px 20px}.chapter,.cover{padding:30px}h1{font-size:36px}.topbar{padding:10px 20px}}
+@media(max-width:760px){nav{display:none;width:285px;box-shadow:0 0 0 100vmax #0007}body.menu-open nav{display:block}main,.topbar{margin-left:0}.mobile-menu,.mobile-close{display:inline-block}.mobile-close{float:right}.topbar{gap:6px;flex-wrap:wrap;padding:9px 12px}.topbar .label{display:none}button{font-size:11px;padding:7px 9px}main{padding:18px 12px 35px}.chapter,.cover{padding:24px 19px;border-radius:8px;margin-bottom:18px}h1{font-size:32px}h2{font-size:23px}.intro{font-size:17px}body{font-size:15px}table{min-width:540px}th,td{padding:9px}.chips{gap:6px}.chips span{font-size:11px;padding:7px 9px}}
+@media print{@page{size:A4;margin:18mm 16mm}html{scroll-behavior:auto}body{background:#fff;font:10.5pt/1.45 Georgia,serif;color:#111}nav,.topbar,.complete{display:none!important}main{margin:0;padding:0;max-width:none}.cover,.chapter{box-shadow:none;border:0;border-radius:0;max-width:none;margin:0;padding:0;background:#fff}.cover{break-after:page}.chapter{break-before:page}h1{font:34pt/1.12 Georgia,serif;color:#000}h2{font:22pt/1.25 Georgia,serif;color:#000;margin:0 0 18pt}h3{font:14pt/1.3 Georgia,serif;color:#000;break-after:avoid}p{orphans:3;widows:3;margin-bottom:10pt}h2,h3{break-after:avoid}table{font-size:9pt;min-width:0}thead{display:table-header-group}tr{break-inside:avoid}th{background:#e5ebee!important;color:#000}th,td{padding:6pt;border-color:#aaa}.table-scroll{overflow:visible}.qa{break-inside:avoid}details.qa{border:0;border-top:1px solid #ccc;border-radius:0;padding-top:8pt}details.qa summary{font-size:11pt;background:none!important;border:0!important;padding:0 0 6pt;color:#000}details.qa p{font-size:10.5pt;margin:0 0 11pt}pre{background:#f0f2f3!important;color:#111;font-size:8.5pt;white-space:pre-wrap;overflow:visible;padding:10pt;break-inside:avoid}pre code{white-space:pre-wrap;font-size:8.5pt}code{font-size:9pt}a{color:#111;text-decoration:none}.chips span{background:#eee!important;color:#000}.footer{font-size:8pt}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<nav aria-label="Handbook chapters"><button id="close-menu" class="mobile-close" aria-label="Close contents">Close</button><div class="brand">NEXUS</div><p class="caption">PROJECT INTERVIEW HANDBOOK<br>Understand · explain · demonstrate</p><label for="search">Find a topic</label><input id="search" type="search" placeholder="Try leakage, Kafka, approval…"><div id="search-count" aria-live="polite">32 chapters · search their full text</div><div class="links"><a href="#1-how-to-use-this-handbook" data-chapter-link="1-how-to-use-this-handbook">1 How to use this handbook</a><a href="#2-the-project-in-simple-language" data-chapter-link="2-the-project-in-simple-language">2 The project in simple language</a><a href="#3-your-interview-introduction" data-chapter-link="3-your-interview-introduction">3 Your interview introduction</a><a href="#4-supply-chain-fundamentals" data-chapter-link="4-supply-chain-fundamentals">4 Supply chain fundamentals</a><a href="#5-feature-map-and-operating-boundaries" data-chapter-link="5-feature-map-and-operating-boundaries">5 Feature map and operating boundaries</a><a href="#6-architecture-from-browser-to-database" data-chapter-link="6-architecture-from-browser-to-database">6 Architecture from browser to database</a><a href="#7-data-sources-and-correct-interpretation" data-chapter-link="7-data-sources-and-correct-interpretation">7 Data sources and correct interpretation</a><a href="#8-ingestion-and-database-design" data-chapter-link="8-ingestion-and-database-design">8 Ingestion and database design</a><a href="#9-time-series-and-feature-engineering" data-chapter-link="9-time-series-and-feature-engineering">9 Time series and feature engineering</a><a href="#10-demand-modeling-and-honest-evaluation" data-chapter-link="10-demand-modeling-and-honest-evaluation">10 Demand modeling and honest evaluation</a><a href="#11-metrics-explained-with-numbers" data-chapter-link="11-metrics-explained-with-numbers">11 Metrics explained with numbers</a><a href="#12-delivery-risk-model" data-chapter-link="12-delivery-risk-model">12 Delivery risk model</a><a href="#13-mlflow-and-model-lifecycle" data-chapter-link="13-mlflow-and-model-lifecycle">13 MLflow and model lifecycle</a><a href="#14-langgraph-and-the-meaning-of-agents" data-chapter-link="14-langgraph-and-the-meaning-of-agents">14 LangGraph and the meaning of agents</a><a href="#15-retrieval-and-policy-grounding" data-chapter-link="15-retrieval-and-policy-grounding">15 Retrieval and policy grounding</a><a href="#16-purchasing-optimization-with-a-worked-example" data-chapter-link="16-purchasing-optimization-with-a-worked-example">16 Purchasing optimization with a worked example</a><a href="#17-one-complete-numerical-journey" data-chapter-link="17-one-complete-numerical-journey">17 One complete numerical journey</a><a href="#18-kafka-and-reliable-event-processing" data-chapter-link="18-kafka-and-reliable-event-processing">18 Kafka and reliable event processing</a><a href="#19-simulation-mechanics" data-chapter-link="19-simulation-mechanics">19 Simulation mechanics</a><a href="#20-approval-policies-and-execution-safeguards" data-chapter-link="20-approval-policies-and-execution-safeguards">20 Approval policies and execution safeguards</a><a href="#21-transactions-concurrency-and-security" data-chapter-link="21-transactions-concurrency-and-security">21 Transactions concurrency and security</a><a href="#22-frontend-apis-and-user-journeys" data-chapter-link="22-frontend-apis-and-user-journeys">22 Frontend APIs and user journeys</a><a href="#23-testing-evidence-and-what-it-proves" data-chapter-link="23-testing-evidence-and-what-it-proves">23 Testing evidence and what it proves</a><a href="#24-deployment-monitoring-and-recovery" data-chapter-link="24-deployment-monitoring-and-recovery">24 Deployment monitoring and recovery</a><a href="#25-code-reading-map-and-trace-exercises" data-chapter-link="25-code-reading-map-and-trace-exercises">25 Code reading map and trace exercises</a><a href="#26-interview-question-bank" data-chapter-link="26-interview-question-bank">26 Interview question bank</a><a href="#27-seven-day-learning-plan-and-mock-interview" data-chapter-link="27-seven-day-learning-plan-and-mock-interview">27 Seven day learning plan and mock interview</a><a href="#28-demo-script-and-troubleshooting" data-chapter-link="28-demo-script-and-troubleshooting">28 Demo script and troubleshooting</a><a href="#29-practical-exercises-with-solutions" data-chapter-link="29-practical-exercises-with-solutions">29 Practical exercises with solutions</a><a href="#30-final-revision-sheet-and-claim-checklist" data-chapter-link="30-final-revision-sheet-and-claim-checklist">30 Final revision sheet and claim checklist</a><a href="#31-glossary-for-quick-reference" data-chapter-link="31-glossary-for-quick-reference">31 Glossary for quick reference</a><a href="#32-evidence-and-scope-of-this-guide" data-chapter-link="32-evidence-and-scope-of-this-guide">32 Evidence and scope of this guide</a></div><div class="progress"><div id="progress-text"></div><progress id="progress" max="32" value="0" aria-label="Chapters practiced"></progress><div>Progress stays in this browser when local storage is available.</div></div></nav>
+<header class="topbar"><button id="menu" class="mobile-menu" aria-label="Open contents">Contents</button><span class="label">Offline study edition · 14 October 2026</span><button id="reading" aria-pressed="false">Larger reading text</button><button id="answers">Show all 60 answers</button><button id="print">Print or save PDF</button></header>
+<main><div class="cover"><div class="eyebrow">From first explanation to technical deep dive</div><h1>NEXUS Project<br>Interview Handbook</h1><p class="intro">Learn the business problem, understand the implementation, defend the design decisions and demonstrate the complete supply-chain simulation.</p><div class="chips"><span>32 chapters</span><span>60 interview answers</span><span>9 worked exercises</span><span>7 day study plan</span></div><p class="cover-note">One offline file. No sign-in, internet connection or external libraries required to read it. Start with the simple explanation, then follow the workflow through the models, event system, optimizer and approval controls.</p><p class="meta">Reviewed against NEXUS 4.0 source and saved verification artifacts<br>Prepared 14 October 2026 · Approximately 16,194 words<br>Scope: local supply-chain intelligence and simulation, not a live commercial ERP.</p></div>
+<section class="chapter" id="section-1-how-to-use-this-handbook" aria-labelledby="1-how-to-use-this-handbook"><h2 id="1-how-to-use-this-handbook">1 How to use this handbook</h2>
+<p>This is a self-contained study guide to the NEXUS supply-chain intelligence and simulation project in this workspace. It starts with plain-language explanations and progresses to implementation details, mathematical examples, failure scenarios, interview answers, and practical exercises. It reflects the implementation and saved verification reports reviewed on <strong>14 October 2026</strong>.</p>
+<p><strong>Your objective is to explain the system, trace an action through it, justify its decisions, and recognize its limits.</strong> Memorizing terminology alone will not achieve that. Read a chapter, close its answers, explain the idea aloud, and complete its exercise. This file contains the project knowledge you need to study; hands-on rehearsal with the project is still necessary for confident live demonstrations and debugging.</p>
+<p>Three labels appear throughout:</p>
+<ul>
+<li><strong>Implemented:</strong> directly present in the active application code.</li>
+<li><strong>Measured:</strong> supported by saved evaluation or verification reports, not a promise about every future run.</li>
+<li><strong>Proposed:</strong> a defensible next step that is not currently built.</li>
+</ul>
+<p>Use the navigation panel to move between chapters. Search filters the chapter list; browser Find searches the full text. The question bank supports hiding answers for active recall. Printing expands the answers and removes navigation controls.</p>
+<h3 id="choose-a-study-route">Choose a study route</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Time available</th>
+<th>What to study</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>30 minutes</td>
+<td>Chapters 2, 3, 10, 17, 28 and 30. Learn the pitch, numbers, reliability story and boundaries.</td>
+</tr>
+<tr>
+<td>One evening</td>
+<td>Chapters 2–18, then the questions relevant to your role. Rehearse the demo once.</td>
+</tr>
+<tr>
+<td>Seven days</td>
+<td>Follow Chapter 27. Complete the exercises and mock interview.</td>
+</tr>
+<tr>
+<td>Before an interview</td>
+<td>Use Chapter 30, then answer five randomly chosen questions without revealing their answers.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Honest ownership:</strong> sample answers describe the project; adapt statements about personal contribution to what you actually understand and did. The implementation was developed with AI assistance in this workspace. Do not claim independent authorship of every line, real commercial deployment, or customer savings that were never measured. Being able to inspect, validate, explain and improve assisted work is more credible than concealing gaps.</p>
+<label class="complete"><input type="checkbox" data-chapter="1-how-to-use-this-handbook"> I can explain this chapter without notes</label></section><section class="chapter" id="section-2-the-project-in-simple-language" aria-labelledby="2-the-project-in-simple-language"><h2 id="2-the-project-in-simple-language">2 The project in simple language</h2>
+<p>NEXUS is a smart control room for a supply chain. It answers five connected questions: What stock exists? What demand is expected? What may arrive late? What should be purchased? What happened after the decision was approved?</p>
+<p>Imagine a warehouse selling goods every day. If it waits until its shelves are empty before buying more, deliveries may arrive too late. Buying too much also costs money and consumes space. NEXUS uses historical demand to estimate future needs, looks at stock and incoming shipments, evaluates supplier delay risk, and constructs a constrained replenishment plan. A policy decides whether a person must review that plan. Execution creates simulated orders and shipments, and subsequent events cause the system to reconsider the plan.</p>
+<p><strong>What is real:</strong> historical datasets, trained models, metric calculations, database transactions, Kafka messages, optimization, authentication, approval checks, and the running dashboard.</p>
+<p><strong>What is simulated:</strong> the operating company, future demand events, supplier commercial terms, future shipments and purchases. The system does not spend real money or send real carrier instructions.</p>
+<p>The safest project description is <strong>a working supply-chain intelligence and simulation platform</strong>. It is more than a dashboard because decisions lead to persistent simulated actions and feedback. It is not yet a turnkey enterprise ERP or a system connected to a real retailer's live supply chain.</p>
+<h3 id="the-problem-and-the-intended-benefit">The problem and the intended benefit</h3>
+<p>Supply-chain information often sits in separate systems. A forecast can be accurate but useless if it never affects purchasing. A recommendation can be sensible but dangerous if it ignores capacity, approvals or duplicate execution. This project explores how to connect prediction, constraints, controlled execution and feedback in one demonstrable system.</p>
+<p>The intended business benefits are fewer shortages, better purchasing decisions and better visibility. <strong>Those benefits have not been measured as real financial savings in this project.</strong> Its measured outcomes are model error, test results and verified workflow behavior.</p>
+<label class="complete"><input type="checkbox" data-chapter="2-the-project-in-simple-language"> I can explain this chapter without notes</label></section><section class="chapter" id="section-3-your-interview-introduction" aria-labelledby="3-your-interview-introduction"><h2 id="3-your-interview-introduction">3 Your interview introduction</h2>
+<h3 id="a-twenty-second-explanation">A twenty second explanation</h3>
+<p>“NEXUS is a supply-chain intelligence simulator. It combines historical demand forecasting, delivery-risk prediction and purchasing optimization with approval controls. Kafka events update PostgreSQL, and approved simulated actions trigger replanning. I can demonstrate the complete decision-to-execution loop.”</p>
+<h3 id="a-sixty-second-explanation">A sixty second explanation</h3>
+<p>“The project connects supply-chain analytics to a working operational workflow. It validates and stores M5 retail history, trains store-level demand forecasts, and uses DataCo history to estimate delivery-delay risk. LangGraph coordinates forecasting, policy retrieval, inventory analysis and OR-Tools allocation. Approval policies gate simulated purchase orders and shipment changes. Kafka transports events, while a transactional outbox and inbox deduplication protect database effects during retries. The selected demand model achieved 5.92 percent test WAPE compared with 10.75 percent for the seasonal baseline. The implementation is a local simulation with real historical data, not a live ERP integration.”</p>
+<h3 id="a-two-minute-explanation">A two minute explanation</h3>
+<p>Expand the sixty second explanation in this order: first explain why stock plus inbound commitments matters; then describe the chronological model evaluation; then walk through an approval and execution; finally explain one failure case and one limitation. A useful failure case is a crash after database commit but before Kafka offset commit. A useful limitation is aggregate inventory rather than product-level purchasing.</p>
+<p>Do not spend your introduction listing every library. Lead with the problem, connect the components to their purpose, give one measured result, and state the operating boundary.</p>
+<h3 id="three-defensible-resume-bullets">Three defensible resume bullets</h3>
+<ul>
+<li>Implemented a supply-chain simulation workflow connecting forecasting, constrained procurement planning, approval policies and idempotent execution through Kafka and PostgreSQL.</li>
+<li>Evaluated store-level demand forecasting with chronological validation and a recursive 28-day holdout, achieving 5.92% WAPE versus a 10.75% seasonal baseline.</li>
+<li>Validated a foundation containing 11.1 million product-day demand records and tested event replay, transaction rollback, broker recovery and database restoration.</li>
+</ul>
+<p>Use “implemented” only to the extent you can accurately describe your contribution. Do not add claims of millions of users, production throughput, autonomous commercial purchasing or financial savings.</p>
+<label class="complete"><input type="checkbox" data-chapter="3-your-interview-introduction"> I can explain this chapter without notes</label></section><section class="chapter" id="section-4-supply-chain-fundamentals" aria-labelledby="4-supply-chain-fundamentals"><h2 id="4-supply-chain-fundamentals">4 Supply chain fundamentals</h2>
+<p><strong>Demand</strong> is what customers want over a period. <strong>Sales</strong> are what was actually sold. They can differ during a stockout: selling zero because no inventory exists does not mean demand was zero. M5 unit sales are used as the forecasting target here; no lost-sales correction is implemented.</p>
+<p><strong>Inventory</strong> is stock currently held. <strong>Inbound stock</strong> is committed stock in shipments that have not yet been delivered. <strong>Lead time</strong> is the elapsed time between ordering and receiving goods. <strong>Capacity</strong> is the amount a warehouse or supplier can accommodate. <strong>Replenishment</strong> means restoring inventory toward a target.</p>
+<p>A <strong>purchase order</strong> records an intention to buy from a supplier. A <strong>shipment</strong> tracks movement and receipt. One order may produce multiple shipments in a real business; this simulation currently creates a shipment for each supplier allocation. A <strong>receipt</strong> is the event that adds arriving goods to stock.</p>
+<p>A <strong>SKU</strong> identifies a particular stock-keeping item. Although NEXUS stores product-level M5 history, its operational warehouse stock and purchasing are aggregate units. It does not currently choose individual SKUs or enforce compatibility between different products' units. That is an important modeling limitation.</p>
+<p>An <strong>ERP</strong> manages business transactions such as purchasing and accounting. A <strong>WMS</strong> manages warehouse operations. A <strong>TMS</strong> manages transportation. NEXUS has an internal simulated execution component; it does not replace these systems or have their production connectors.</p>
+<p>Traditional ideas such as economic order quantity, service-level safety stock, reorder points and minimum order quantities are useful future extensions. The implemented inventory rule is simpler: aim for seven days of average forecast demand, capped by warehouse capacity, after accounting for stock and inbound commitments.</p>
+<p><strong>Explain it aloud:</strong> Why can a warehouse with low physical stock still require no new order? Answer: sufficiently large inbound commitments may already cover its replenishment target.</p>
+<label class="complete"><input type="checkbox" data-chapter="4-supply-chain-fundamentals"> I can explain this chapter without notes</label></section><section class="chapter" id="section-5-feature-map-and-operating-boundaries" aria-labelledby="5-feature-map-and-operating-boundaries"><h2 id="5-feature-map-and-operating-boundaries">5 Feature map and operating boundaries</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Feature group</th>
+<th>What the implementation does</th>
+<th>Boundary to remember</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard</td>
+<td>Shows persisted stock, shipments, disruptions and decisions</td>
+<td>Sample and simulation records coexist; this is not live company telemetry</td>
+</tr>
+<tr>
+<td>Forecast lab</td>
+<td>Displays trained M5 forecasts and holdout comparisons</td>
+<td>Store-level historical-cutoff forecasts, not current-year commercial predictions</td>
+</tr>
+<tr>
+<td>Inventory</td>
+<td>Transfers stock, checks capacity and records receipts</td>
+<td>Aggregate units, not SKU inventory</td>
+</tr>
+<tr>
+<td>Suppliers</td>
+<td>Maintains records and assessed scores; scenarios use trained delay risk</td>
+<td>Financial supplier risk and delivery delay are different concepts</td>
+</tr>
+<tr>
+<td>Disruptions</td>
+<td>Creates sample response reports and reviewable narrative plans</td>
+<td>These legacy rule-based reports are distinct from executable simulation plans</td>
+</tr>
+<tr>
+<td>Simulation</td>
+<td>Queues future scenario events and updates operating state through a worker</td>
+<td>Simulation ticks, not incoming live sales feeds</td>
+</tr>
+<tr>
+<td>Planning</td>
+<td>Uses LangGraph, retrieval and OR-Tools for replenishment</td>
+<td>Fixed tool workflow, not LLM-led autonomous reasoning</td>
+</tr>
+<tr>
+<td>Knowledge</td>
+<td>Retrieves cited policy and supplier text</td>
+<td>TF-IDF and extractive answers; no vector database or generative LLM</td>
+</tr>
+<tr>
+<td>Execution</td>
+<td>Issues simulated orders, creates shipments and reroutes them</td>
+<td>No actual vendor or carrier side effects</td>
+</tr>
+<tr>
+<td>Monitoring</td>
+<td>Shows worker age, queues, failures, runs and demand error</td>
+<td>No full external alerting or high-availability system</td>
+</tr>
+</tbody>
+</table></div>
+<p>The older demand-import endpoint and simple baseline are separate from the M5 model pipeline. Importing a small daily-demand CSV does not automatically retrain or replace the advanced model. In the current component code, the old baseline screen is not an ordinary navigation destination. Do not promise a polished general-purpose company import wizard.</p>
+<p>The network map is a geographic schematic, not live vehicle GPS or a physically calibrated digital twin. The copilot uses stored records and retrieval; its name does not imply an LLM is running.</p>
+<label class="complete"><input type="checkbox" data-chapter="5-feature-map-and-operating-boundaries"> I can explain this chapter without notes</label></section><section class="chapter" id="section-6-architecture-from-browser-to-database" aria-labelledby="6-architecture-from-browser-to-database"><h2 id="6-architecture-from-browser-to-database">6 Architecture from browser to database</h2>
+<pre><code class="language-text">M5 files ---------&gt; validated relational history -----&gt; demand model
+DataCo files -----&gt; separate logistics history -------&gt; delay-risk model
+SF public data --&gt; separate procurement history ------&gt; source inspection
+                                      |
+                           model artifacts and MLflow
+                                      |
+Browser -&gt; Next.js -&gt; FastAPI -&gt; scenario generator -&gt; PostgreSQL outbox
+                                                       |
+                                                       v
+                                                     Kafka
+                                                       |
+                                                       v
+                                                event worker
+                                                       |
+                    PostgreSQL state &lt;---- demand and receipt updates
+                                                       |
+                                                       v
+                 LangGraph -&gt; retrieval -&gt; inventory -&gt; OR-Tools -&gt; policy
+                                                       |
+                                          automatic or human approval
+                                                       |
+                                                       v
+                            simulated execution -&gt; outbox -&gt; Kafka
+                                                       |
+                                                       v
+                                                   replanning
+</code></pre>
+<p><strong>Next.js and React</strong> provide screens and interactions. The browser calls <code>/api/...</code>; Next.js proxies those requests to FastAPI. This keeps the browser-facing API on the same origin as the application.</p>
+<p><strong>FastAPI</strong> authenticates users, validates requests, exposes operational endpoints and writes records. <strong>Pydantic</strong> checks request structure and constraints such as nonnegative quantities. Valid input is not automatically valid business behavior: execution also checks stock, capacity, state and policy.</p>
+<p><strong>PostgreSQL</strong> is the production-style local source of operational truth. Historical tables have relational keys; operational objects are serialized JSON in a generic records table. <strong>SQLite</strong> supports isolated tests and the earlier local mode. PostgreSQL and SQLite are not simultaneously required for the same operational store.</p>
+<p><strong>Kafka</strong> transports events between producers and the state worker. <strong>LangGraph</strong> organizes a repeatable planning workflow. <strong>scikit-learn</strong> trains the models. <strong>OR-Tools</strong> solves an integer procurement problem. <strong>MLflow</strong> records experiments and model artifacts. <strong>Docker Compose</strong> starts the services and persistent volumes.</p>
+<p>The distinction between a database and a message broker matters. PostgreSQL answers “what is the current persisted state?” Kafka delivers ordered messages within partitions so consumers can react. The database audit log provides user-facing history. This combination is not pure event sourcing: current state is stored directly, and full event-only reconstruction is not implemented.</p>
+<h3 id="why-this-stack-is-defensible">Why this stack is defensible</h3>
+<p>The stack makes multiple engineering concerns visible and testable. A smaller application could use a database-backed job queue and ordinary Python functions. Kafka and LangGraph are not necessary for every inventory tool. Here they support studying decoupled events, recovery and explicit planning steps. The tradeoff is more deployment complexity and more failure modes.</p>
+<label class="complete"><input type="checkbox" data-chapter="6-architecture-from-browser-to-database"> I can explain this chapter without notes</label></section><section class="chapter" id="section-7-data-sources-and-correct-interpretation" aria-labelledby="7-data-sources-and-correct-interpretation"><h2 id="7-data-sources-and-correct-interpretation">7 Data sources and correct interpretation</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Imported scope</th>
+<th>Actual use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M5</td>
+<td>3,049 products, 10 stores, 30,490 product/store series; 365 product-history days</td>
+<td>Demand foundation and store-level forecasting</td>
+</tr>
+<tr>
+<td>DataCo</td>
+<td>180,519 order lines; aggregated into 65,752 orders for risk training/evaluation</td>
+<td>Delivery-delay prediction and sampled logistics patterns</td>
+</tr>
+<tr>
+<td>San Francisco</td>
+<td>20,000 public purchase-order accounting rows</td>
+<td>Identifiable procurement reference data and source browsing</td>
+</tr>
+</tbody>
+</table></div>
+<p>The M5 demand table contains <strong>30,490 × 365 = 11,128,850 observations</strong>. All <strong>1,913 historical days</strong> are preserved at store/day grain, giving <strong>19,130 store-day observations</strong>. Those 19,130 observations—not all 11.1 million product rows—form the input history for the demand model.</p>
+<p>The San Francisco extract is bounded. It is not the complete city's procurement database, not purchase-order line items, and not a source of unit prices for the optimizer. DataCo lines are not independent orders; splitting lines randomly could place different lines from the same order in both training and testing.</p>
+<p><strong>Namespacing</strong> prefixes an ID with its origin and entity type. A product might use <code>m5:product:ITEM_1</code>; a series might use <code>m5:series:ITEM_1:CA_1</code>. A synthetic warehouse uses a separate <code>SIM-WH-...</code> identity with an explicit M5 store mapping. A real M5 store is never silently renamed as a historical warehouse operated by DataCo.</p>
+<p>Each source manifest records provenance such as URL, namespace, file hash, row count, grain and retrieval metadata. A SHA-256 hash is a fingerprint of file content: it helps establish which input was used. It does not prove that the source data is correct or free of bias. Cached input reuse can update ingestion metadata without a fresh remote download, so do not treat every recorded retrieval timestamp as a new network fetch.</p>
+<p>Public-source references, also present in repository manifests: M5 competition data at <code>https://www.kaggle.com/competitions/m5-forecasting-accuracy/data</code>; DataCo at <code>https://data.mendeley.com/datasets/8gx2fvg2k6/5</code>; San Francisco at <code>https://data.sf.gov/d/p5r5-fd7g</code>. These links identify provenance; the guide's project claims were checked against local code and artifacts rather than a new external-source audit.</p>
+<label class="complete"><input type="checkbox" data-chapter="7-data-sources-and-correct-interpretation"> I can explain this chapter without notes</label></section><section class="chapter" id="section-8-ingestion-and-database-design" aria-labelledby="8-ingestion-and-database-design"><h2 id="8-ingestion-and-database-design">8 Ingestion and database design</h2>
+<h3 id="what-validation-checks">What validation checks</h3>
+<p>M5 ingestion checks unique item/store pairs, consistent product departments/categories, consistent store states, unique calendar days/dates, complete day mappings, nonnegative integer demand, positive prices, unique price keys, known pricing weeks and known product/store series. Failed checks stop ingestion rather than quietly accepting bad rows.</p>
+<p>The wide M5 sales format has a column per day. The importer converts selected days into long rows containing <code>series_id</code>, <code>day</code>, and <code>units</code>. It processes 1,500 series per conversion chunk. PostgreSQL bulk ingestion uses <code>COPY</code> into a temporary staging table and then an upsert into the target table. This avoids sending a separate database request for every observation.</p>
+<p>An <strong>upsert</strong> inserts a new key or updates the existing record for that key. It helps avoid duplicate rows during repeat imports. When matching file hashes and history-window size already exist and the demand-row count matches, the importer reuses the stored import. This shortcut checks identity/count, not a full row-by-row database checksum.</p>
+<p>Chunking bounds the long-form conversion size, but the current importer still reads the wide sales, calendar and price files into pandas. Do not claim fully streaming, constant-memory ingestion. A production extension could use staged partitions, stronger import-run metadata and explicit reconciliation.</p>
+<h3 id="historical-tables">Historical tables</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Key or relationship</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data_sources</code></td>
+<td><code>source_id</code></td>
+<td>Manifest and provenance</td>
+</tr>
+<tr>
+<td><code>m5_products</code></td>
+<td><code>product_id</code>, source reference</td>
+<td>Product metadata</td>
+</tr>
+<tr>
+<td><code>m5_stores</code></td>
+<td><code>store_id</code>, source reference</td>
+<td>Store metadata</td>
+</tr>
+<tr>
+<td><code>m5_series</code></td>
+<td><code>series_id</code> references product and store</td>
+<td>Product/store identity</td>
+</tr>
+<tr>
+<td><code>m5_calendar</code></td>
+<td><code>day</code>, unique date</td>
+<td>Calendar mapping</td>
+</tr>
+<tr>
+<td><code>m5_demand</code></td>
+<td>Composite <code>(series_id, day)</code></td>
+<td>Product-day demand</td>
+</tr>
+<tr>
+<td><code>m5_store_daily</code></td>
+<td>Composite <code>(store_id, date)</code></td>
+<td>Forecasting history</td>
+</tr>
+<tr>
+<td><code>m5_prices</code></td>
+<td>Composite <code>(series_id, week)</code></td>
+<td>Historical weekly prices</td>
+</tr>
+<tr>
+<td><code>logistics_history</code></td>
+<td>Namespaced line ID</td>
+<td>DataCo order-line records</td>
+</tr>
+<tr>
+<td><code>procurement_history</code></td>
+<td>Namespaced source-row ID</td>
+<td>SF accounting rows</td>
+</tr>
+</tbody>
+</table></div>
+<p>A <strong>primary key</strong> identifies one row. A <strong>foreign key</strong> prevents a referenced product, store or series from being missing. A <strong>composite key</strong> combines multiple columns because neither column alone identifies the observation.</p>
+<h3 id="operational-persistence">Operational persistence</h3>
+<p>The <code>records</code> table has <code>(kind, id)</code> as its key and JSON serialized into a <code>data</code> text column. Kinds include warehouses, suppliers, shipments, decisions, purchase orders, planning runs, documents and monitoring. Separate tables hold events, users, sessions, login attempts, outbox rows, inbox IDs and dead letters.</p>
+<p>This design simplifies a flexible prototype. Its cost is weaker database-level business relationships and more application-side scanning/filtering. PostgreSQL-native JSONB, indexed columns, normalized order lines and explicit company ownership would be stronger foundations for a larger operational product. Do not describe the current <code>data</code> column as JSONB; it is text containing JSON.</p>
+<label class="complete"><input type="checkbox" data-chapter="8-ingestion-and-database-design"> I can explain this chapter without notes</label></section><section class="chapter" id="section-9-time-series-and-feature-engineering" aria-labelledby="9-time-series-and-feature-engineering"><h2 id="9-time-series-and-feature-engineering">9 Time series and feature engineering</h2>
+<p>A time series is a sequence of observations ordered by time. In this project, each store has daily unit sales. A supervised regression model needs input features available at prediction time and a numeric target: units sold on the target day.</p>
+<p>The eleven implemented inputs are <code>store_code</code>, <code>lag_1</code>, <code>lag_7</code>, <code>lag_14</code>, <code>lag_28</code>, <code>mean_7</code>, <code>mean_28</code>, <code>std_7</code>, <code>dow</code>, <code>month</code>, and <code>day</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Meaning</th>
+<th>Why it may help</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lag 1</td>
+<td>Previous day's units</td>
+<td>Recent demand level</td>
+</tr>
+<tr>
+<td>Lag 7</td>
+<td>Units seven days earlier</td>
+<td>Weekly pattern</td>
+</tr>
+<tr>
+<td>Lags 14 and 28</td>
+<td>Two/four weeks earlier</td>
+<td>Longer weekly context</td>
+</tr>
+<tr>
+<td>Mean 7 and 28</td>
+<td>Average of preceding observations</td>
+<td>Smoothed local level</td>
+</tr>
+<tr>
+<td>Standard deviation 7</td>
+<td>Variability over the preceding week</td>
+<td>Recent volatility</td>
+</tr>
+<tr>
+<td>Day of week, month, day</td>
+<td>Calendar values</td>
+<td>Calendar-associated patterns</td>
+</tr>
+<tr>
+<td>Store code</td>
+<td>Stable integer per store</td>
+<td>Differences across stores</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Leakage</strong> means using information that would not have been available when making the prediction. For example, a rolling average containing today's actual sales would leak the target. The code shifts the series by one before rolling:</p>
+<pre><code class="language-python"># Actual implementation pattern in models.py
+grouped.transform(lambda s: s.shift(1).rolling(7).mean())
+</code></pre>
+<p>If the previous seven observations are 80, 90, 100, 110, 100, 120 and 100, <code>mean_7</code> for the next day is 100. You do not add that next day's unknown sales. Grouping by store also prevents the final observation of one store becoming a lag for another store.</p>
+<p>Rows without sufficient history are removed after feature construction. The first 28 days per store cannot provide lag 28. Although the model summary reports 18,570 raw training-history rows, feature construction removes 280 initial rows for this complete ten-store history, leaving 18,290 usable first-fit rows.</p>
+<p>The model currently does not use sell prices, promotions, holidays, SNAP flags or external events as inputs. Price data is validated and stored, but storage is not the same as model usage. Store codes are ordinal integers, not one-hot features in this demand model; that is a simplification worth revisiting.</p>
+<label class="complete"><input type="checkbox" data-chapter="9-time-series-and-feature-engineering"> I can explain this chapter without notes</label></section><section class="chapter" id="section-10-demand-modeling-and-honest-evaluation" aria-labelledby="10-demand-modeling-and-honest-evaluation"><h2 id="10-demand-modeling-and-honest-evaluation">10 Demand modeling and honest evaluation</h2>
+<p>The candidate model is scikit-learn's <code>HistGradientBoostingRegressor</code>. Gradient boosting adds trees sequentially to reduce errors. Histogram-based splitting groups continuous feature values into bins, making training practical for tabular data. The implementation uses 160 iterations, at most 15 leaves per tree, learning rate 0.06, L2 regularization 2, seed 42 and <code>early_stopping=False</code>.</p>
+<p>These values define a fixed candidate. <strong>There is no large hyperparameter search in the current pipeline.</strong> Turning off automatic early stopping avoids relying on its default internal validation behavior instead of the explicitly chronological evaluation, but the code does not document a comprehensive tuning experiment.</p>
+<p>The baseline is <strong>seasonal naive with period seven</strong>: predict the value from seven days earlier. A baseline establishes whether extra complexity adds value. A complex model that loses to a suitable baseline should not be preferred just because it sounds more advanced.</p>
+<h3 id="the-exact-evaluation-sequence">The exact evaluation sequence</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Partition</th>
+<th>Dates</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initial training</td>
+<td>29 January 2011–28 February 2016</td>
+<td>Fit the candidate</td>
+</tr>
+<tr>
+<td>Validation</td>
+<td>29 February–27 March 2016</td>
+<td>Select candidate versus baseline using WAPE</td>
+</tr>
+<tr>
+<td>Final test</td>
+<td>28 March–24 April 2016</td>
+<td>Evaluate without changing selection</td>
+</tr>
+<tr>
+<td>Final model fit</td>
+<td>All available history through 24 April 2016</td>
+<td>Produce the subsequent 28-day forecast</td>
+</tr>
+</tbody>
+</table></div>
+<p>Both candidate and baseline forecast the 28 validation days recursively. The lower validation WAPE determines the selected method. The candidate is refitted on training plus validation, and both methods are evaluated on the final test. After evaluation, the candidate is fit on all historical data for future forecasting; selection still follows validation. If the baseline had won, the future output would use the baseline.</p>
+<p>The future M5 forecast covers <strong>25 April–22 May 2016</strong>. The simulator projects its pattern onto synthetic future dates; it does not claim that a model trained through 2016 is a validated forecast of real 2026 demand.</p>
+<h3 id="recursive-prediction">Recursive prediction</h3>
+<p>For tomorrow, lag 1 is the last observed value. For the day after tomorrow, lag 1 is tomorrow's prediction, because tomorrow's actual value is unknown. Each predicted value is appended to the history used for the next step. The seven-day baseline repeats its last observed week when forecasting farther ahead.</p>
+<p>This is a realistic multi-step evaluation, but errors can accumulate. A direct multi-horizon model, rolling-origin backtesting or additional time-aware models would be future comparisons. Do not say these were already tested.</p>
+<h3 id="measured-comparison">Measured comparison</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Partition and method</th>
+<th style="text-align: right;">WAPE percent</th>
+<th style="text-align: right;">MAE units</th>
+<th style="text-align: right;">RMSE units</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Validation candidate</td>
+<td style="text-align: right;">7.89</td>
+<td style="text-align: right;">331.46</td>
+<td style="text-align: right;">482.91</td>
+</tr>
+<tr>
+<td>Validation baseline</td>
+<td style="text-align: right;">9.88</td>
+<td style="text-align: right;">415.10</td>
+<td style="text-align: right;">615.08</td>
+</tr>
+<tr>
+<td>Test candidate</td>
+<td style="text-align: right;">5.92</td>
+<td style="text-align: right;">250.30</td>
+<td style="text-align: right;">349.81</td>
+</tr>
+<tr>
+<td>Test baseline</td>
+<td style="text-align: right;">10.75</td>
+<td style="text-align: right;">454.22</td>
+<td style="text-align: right;">643.28</td>
+</tr>
+</tbody>
+</table></div>
+<p>Using the unrounded values, relative WAPE reduction is approximately <code>(10.7451 - 5.9211) / 10.7451 × 100 = 44.9%</code>. Say <strong>about 45% lower test WAPE</strong>, not 45 percentage points and not 94.08% classification accuracy. The final holdout contains 280 store-day observations. Results are aggregated across stores and may hide weak performance for a particular store.</p>
+<h3 id="forecast-ranges-and-their-limitation">Forecast ranges and their limitation</h3>
+<p>The code takes the 90th percentile of absolute errors of the selected method on the final holdout, approximately 557.41 units. It adds/subtracts that fixed width around future forecasts, clipping the lower bound at zero. It labels this as an empirical range, not a coverage guarantee.</p>
+<p>The same final holdout supplies the error width, so it is not also an independent test of that range's future coverage. There is no separate calibration dataset, horizon-specific width, probabilistic distribution or validated conformal interval. This is an excellent place to show methodological honesty and propose a better calibration design.</p>
+<label class="complete"><input type="checkbox" data-chapter="10-demand-modeling-and-honest-evaluation"> I can explain this chapter without notes</label></section><section class="chapter" id="section-11-metrics-explained-with-numbers" aria-labelledby="11-metrics-explained-with-numbers"><h2 id="11-metrics-explained-with-numbers">11 Metrics explained with numbers</h2>
+<p>Let actual values be <code>[100, 200, 0]</code> and predictions be <code>[90, 180, 10]</code>. Absolute errors are <code>[10, 20, 10]</code>.</p>
+<p><strong>MAE = sum of absolute errors / number of observations.</strong> Here it is <code>40 / 3 = 13.33 units</code>. It is easy to interpret in the original unit. It treats each absolute error linearly.</p>
+<p><strong>RMSE = square root of mean squared error.</strong> Here it is <code>sqrt((100 + 400 + 100) / 3) = sqrt(200) = 14.14 units</code>. Squaring gives large errors more influence. RMSE being above MAE suggests that some errors are relatively large; it is not automatically evidence of a bug.</p>
+<p><strong>WAPE = 100 × sum(abs(actual - predicted)) / sum(abs(actual)).</strong> Here it is <code>100 × 40 / 300 = 13.33%</code>. The zero-demand observation still contributes its error to the numerator. If total absolute actual demand is zero, WAPE is undefined; the code returns <code>None</code>, not a falsely perfect zero.</p>
+<p><strong>MAPE</strong> averages a percentage for each individual observation and is problematic at zero actuals. WAPE avoids dividing by each individual zero, but emphasizes high-volume contributions and can conceal small-series problems. A robust extension would include per-store and per-horizon errors, bias and repeated time windows.</p>
+<p><strong>Forecast bias</strong> means consistently overpredicting or underpredicting. NEXUS does not currently report a signed-bias metric in its saved demand summary. You could add mean signed error, with the sign convention clearly documented, to connect forecast behavior to excess inventory or shortages.</p>
+<p><strong>Accuracy is not an interchangeable word for every metric.</strong> WAPE measures regression error; classification accuracy measures the fraction of correctly classified outcomes. Never subtract WAPE from 100 and call it classification accuracy.</p>
+<label class="complete"><input type="checkbox" data-chapter="11-metrics-explained-with-numbers"> I can explain this chapter without notes</label></section><section class="chapter" id="section-12-delivery-risk-model" aria-labelledby="12-delivery-risk-model"><h2 id="12-delivery-risk-model">12 Delivery risk model</h2>
+<p>DataCo begins as order lines. The code aggregates by order ID, using the earliest order date, the first shipping mode/market/region/scheduled days, summed quantity and sales, and maximum actual days and late outcome. The use of first values assumes those fields are consistent within an order; a stronger ingestion pipeline should explicitly validate that assumption.</p>
+<p>The split is chronological at approximately 80% of <strong>unique order dates</strong>, not a random 80% sample of rows. Training has 51,457 orders, from 1 January 2015 through 19 June 2017. Testing has 14,295 orders, from 20 June 2017 through 31 January 2018. Both partitions must contain both outcome classes.</p>
+<p>Inputs are shipping mode, market, region, scheduled days, quantity and sales. A <code>ColumnTransformer</code> one-hot encodes the first three and standardizes the numeric values. A logistic regression classifier learns from these transformed inputs. The preprocessing and classifier live in a scikit-learn pipeline, so preprocessing is fit on training data and reused for test/inference.</p>
+<p><strong>One-hot encoding</strong> represents categories with indicator columns. It avoids treating a category's arbitrary numeric label as a physical measurement. <code>handle_unknown='ignore'</code> allows unseen categories without an exception, but an unseen category still introduces uncertainty and does not become well understood by the model.</p>
+<p><strong>Standardization</strong> subtracts a training mean and divides by a training standard deviation. It helps numerical optimization and regularization when input scales differ. Logistic regression maps a weighted score through a sigmoid into a probability between zero and one. The default reported accuracy uses a 0.5 threshold.</p>
+<p>Actual delivery duration, actual shipping date, delivery status and the late outcome are excluded from predictors. These could reveal the answer or be unavailable at the time a decision is made. The target is delivery delay, <strong>not supplier bankruptcy, creditworthiness or overall supplier reliability</strong>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th style="text-align: right;">Model</th>
+<th style="text-align: right;">Baseline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ROC-AUC</td>
+<td style="text-align: right;">0.7330</td>
+<td style="text-align: right;">Not reported as a separate baseline AUC</td>
+</tr>
+<tr>
+<td>Brier score</td>
+<td style="text-align: right;">0.1964</td>
+<td style="text-align: right;">0.2475</td>
+</tr>
+<tr>
+<td>Accuracy</td>
+<td style="text-align: right;">69.27%</td>
+<td style="text-align: right;">55.05%</td>
+</tr>
+</tbody>
+</table></div>
+<p>ROC-AUC measures ranking discrimination across thresholds, not “73.3% correct predictions.” Brier score is the average squared difference between predicted probability and the 0/1 outcome; lower is better. It reflects probability quality but does not replace a calibration plot. The baseline probability is the training late-delivery rate, approximately 54.76%; baseline class predictions choose the majority class.</p>
+<p>Unlike demand forecasting's final full-history refit, the risk artifact is saved from the training partition after evaluation; the current risk code does not refit it on all orders. The historical simulation pattern summary does use all imported orders. Keep the training artifact and simulation pattern extraction conceptually separate.</p>
+<p>Applying the model to synthetic supplier features is a <strong>domain transfer assumption</strong>, not a validated prediction about an actual supplier. A future company deployment requires representative labels, calibration, feature availability checks and cost-based threshold selection.</p>
+<label class="complete"><input type="checkbox" data-chapter="12-delivery-risk-model"> I can explain this chapter without notes</label></section><section class="chapter" id="section-13-mlflow-and-model-lifecycle" aria-labelledby="13-mlflow-and-model-lifecycle"><h2 id="13-mlflow-and-model-lifecycle">13 MLflow and model lifecycle</h2>
+<p>An experiment groups related runs. A run stores parameters, metrics and artifacts from one training attempt. NEXUS uses the experiment name <code>NEXUS verified models</code> with runs such as <code>m5-store-demand</code> and <code>dataco-delay-risk</code>.</p>
+<p>Parameters include method choices, forecasting horizon and training settings. Metrics include candidate/baseline validation and test errors, and risk classification/probability scores. Artifacts include an evaluation JSON and the saved joblib model bundle. Run IDs appear in model summaries and planning provenance.</p>
+<p>The UI's charts read forecast and summary JSON files. The planning forecast step also reads precomputed forecast JSON; it does not fit a new demand model for each request. The risk step loads the trained joblib bundle and predicts for the synthetic supplier features. In the current code, loading happens per call rather than through a carefully versioned serving cache.</p>
+<p>MLflow tracking does not automatically provide a model registry workflow, drift-triggered retraining, A/B testing, deployment approval or rollback. NEXUS currently saves artifacts to the configured location and uses them. A stronger lifecycle would version a complete artifact directory, atomically switch an active-model pointer, persist input hashes with each run, and gate activation on validation.</p>
+<p><strong>Security point:</strong> joblib uses pickle-based object serialization. Only load trusted model artifacts. The application does not expose a user-uploaded joblib execution feature; do not add one casually.</p>
+<label class="complete"><input type="checkbox" data-chapter="13-mlflow-and-model-lifecycle"> I can explain this chapter without notes</label></section><section class="chapter" id="section-14-langgraph-and-the-meaning-of-agents" aria-labelledby="14-langgraph-and-the-meaning-of-agents"><h2 id="14-langgraph-and-the-meaning-of-agents">14 LangGraph and the meaning of agents</h2>
+<p>LangGraph describes computation as nodes connected by edges with state passed between them. A node receives state and returns updates. In this implementation, a typed state includes warehouse, suppliers, inbound stock, severity, documents, forecast, risk scores, citations, optimization, plan, policy and reports.</p>
+<p>The actual graph is a fixed sequence of <strong>seven nodes</strong>:</p>
+<ol>
+<li><code>forecast_agent</code> reads the mapped store forecast and calculates average daily demand.</li>
+<li><code>risk_agent</code> scores synthetic supplier features with the trained delay model.</li>
+<li><code>retrieval_agent</code> retrieves relevant policy/supplier passages.</li>
+<li><code>inventory_agent</code> calculates target stock and shortfall after inbound commitments.</li>
+<li><code>optimization_agent</code> allocates the shortfall to suppliers under capacity and budget constraints.</li>
+<li><code>planner_agent</code> evaluates approval policy and produces reports.</li>
+<li><code>summary_agent</code> summarizes quantity, estimated cost and decision status.</li>
+</ol>
+<p>Some nodes produce more than one report, so the number of report labels can exceed the number of graph nodes. Older rule-based disruption reports also exist. Do not equate every dashboard agent label with a separate LLM or a parallel autonomous worker.</p>
+<p>This is <strong>tool-based orchestration</strong>. No LLM selects tools, writes free-form purchase orders or changes graph structure. LangGraph alone does not imply generative AI. Its benefit here is explicit state flow, identifiable steps and a clear place to extend branching or checkpointing.</p>
+<p>Before invoking the graph, <code>plan_replenishment</code> checks whether an unresolved purchase-order decision already exists for that warehouse. If so, it returns that decision instead of creating another. Otherwise it counts inbound shipments, runs the graph and persists reports, elapsed time, citations and forecast provenance. When there is no shortfall it records a <code>NO_ACTION</code> result.</p>
+<p>If optimization is feasible, planning confidence is set to 0.9; otherwise it is zero. This is a <strong>heuristic feasibility score</strong>, not a calibrated probability of business success. The approval logic uses the maximum allocated supplier delay probability as its risk input.</p>
+<p><strong>Important nuance:</strong> the graph is acyclic. Replanning forms a system-level feedback loop through execution events and new graph invocations; it is not an internal graph edge looping forever. Durable step-level graph checkpoint/resume is not configured.</p>
+<label class="complete"><input type="checkbox" data-chapter="14-langgraph-and-the-meaning-of-agents"> I can explain this chapter without notes</label></section><section class="chapter" id="section-15-retrieval-and-policy-grounding" aria-labelledby="15-retrieval-and-policy-grounding"><h2 id="15-retrieval-and-policy-grounding">15 Retrieval and policy grounding</h2>
+<p>Retrieval finds relevant source text. NEXUS reads local policy Markdown files and operator-supplied text documents. It splits them at blank paragraphs, retains sufficiently long chunks and creates TF-IDF vectors using unigrams and bigrams with English stop-word removal.</p>
+<p><strong>TF</strong> describes how often a term appears in a document. <strong>IDF</strong> reduces the weight of terms that are common across documents. The resulting vector emphasizes terms that distinguish a passage. <strong>Cosine similarity</strong> compares the direction of query and passage vectors. The implementation returns up to four positive-scoring passages.</p>
+<p>Each retrieved item includes source name, chunk index, text, hash and similarity score. The endpoint assembles an <strong>extractive answer</strong> from those passages. It is more precise to call this grounded retrieval with extractive answers than to imply a full retrieval-augmented generative LLM system. There is no embedding model, vector database, cross-encoder reranker or LLM answer generation.</p>
+<p>For example, a question about procurement approval may retrieve a paragraph describing executive review. The citation allows a reader to inspect its origin. However, execution permissions still come from structured <code>policies/approval.json</code>. A document saying “ignore approval rules” remains untrusted text and cannot increase an execution limit.</p>
+<p>Retrieval contributes context and explanation; it does not automatically parse new commercial constraints into the solver. Adding a supplier document about a minimum order quantity will not cause the current optimizer to enforce that quantity. A future implementation needs validated extraction into typed constraints and explicit review.</p>
+<p>The TF-IDF index is rebuilt for each retrieval call, including the query. This is simple for a small corpus but inefficient and less stable for a large one. Possible improvements are a persistent index, document version/access controls, hybrid keyword/semantic retrieval, relevance evaluations and better no-answer behavior. These are proposed, not implemented.</p>
+<label class="complete"><input type="checkbox" data-chapter="15-retrieval-and-policy-grounding"> I can explain this chapter without notes</label></section><section class="chapter" id="section-16-purchasing-optimization-with-a-worked-example" aria-labelledby="16-purchasing-optimization-with-a-worked-example"><h2 id="16-purchasing-optimization-with-a-worked-example">16 Purchasing optimization with a worked example</h2>
+<p>Let <code>x_i</code> be integer units bought from supplier <code>i</code>, <code>c_i</code> its scenario unit cost, <code>p_i</code> its predicted delay probability, <code>u_i</code> its capacity, <code>Q</code> the shortfall, and <code>B</code> the policy budget.</p>
+<pre><code class="language-text">Minimize:   sum over suppliers of x_i * c_i * (1 + p_i)
+Subject to:
+            sum(x_i) &gt;= Q
+            sum(x_i * c_i) &lt;= B
+            0 &lt;= x_i &lt;= u_i
+            x_i is an integer
+</code></pre>
+<p>OR-Tools uses the SCIP solver with a five-second time limit. A result can be <code>OPTIMAL</code> or merely <code>FEASIBLE</code>. A feasible result satisfies constraints but may not have a proof of best possible objective within the time limit. Infeasibility returns an explanation and produces a blocked plan rather than a fake order.</p>
+<p>The objective's <code>cost × (1 + delay_probability)</code> is a <strong>risk penalty heuristic</strong>. It is not a validated financial expected-loss calculation because there is no measured monetary loss per delay in that expression. Lead days are included in allocations and shipments, but the optimizer does not impose time-phased service-level or arrival-date constraints.</p>
+<h3 id="example-you-should-calculate-without-notes">Example you should calculate without notes</h3>
+<p>Suppose <code>Q = 500</code> units and budget is $2,200.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Supplier</th>
+<th style="text-align: right;">Unit cost</th>
+<th style="text-align: right;">Delay probability</th>
+<th style="text-align: right;">Capacity</th>
+<th style="text-align: right;">Objective cost per unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td style="text-align: right;">$4</td>
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">$4.40</td>
+</tr>
+<tr>
+<td>B</td>
+<td style="text-align: right;">$3</td>
+<td style="text-align: right;">0.80</td>
+<td style="text-align: right;">500</td>
+<td style="text-align: right;">$5.40</td>
+</tr>
+</tbody>
+</table></div>
+<p>The optimizer prefers A under the risk-penalized objective. Allocate 300 units to A and the remaining 200 to B. Actual purchase cost is <code>300×4 + 200×3 = $1,800</code>. Objective value is <code>300×4.4 + 200×5.4 = $2,400</code>. The budget constraint uses $1,800, not $2,400. The high delay probability of supplier B can still require human review.</p>
+<p>If the budget falls to $1,600, the first allocation is unaffordable. The solver can use 100 units from A and 400 from B: purchase cost $1,600 and objective $2,600. If the budget falls below $1,500, no 500-unit allocation is affordable with these suppliers, so the problem is infeasible.</p>
+<p>These are <strong>teaching numbers</strong>, not the saved model's supplier scores. In the actual scenario, supplier cost/lead/capacity assumptions are <code>(4.2, 4 days, 500000)</code>, <code>(5.1, 2 days, 300000)</code>, and <code>(3.8, 6 days, 800000)</code>. They are synthetic and are not inferred from San Francisco vendors.</p>
+<p>Current gaps include minimum order quantities, supplier capacity shared across simultaneous warehouse plans, multiple SKUs, price breaks, lead-time service constraints and global budgets across many orders. Local feasibility does not imply an optimal plan for the whole business.</p>
+<label class="complete"><input type="checkbox" data-chapter="16-purchasing-optimization-with-a-worked-example"> I can explain this chapter without notes</label></section><section class="chapter" id="section-17-one-complete-numerical-journey" aria-labelledby="17-one-complete-numerical-journey"><h2 id="17-one-complete-numerical-journey">17 One complete numerical journey</h2>
+<p>This example deliberately uses small teaching values so you can explain each step. Assume a synthetic warehouse has average forecast demand of 100 units/day, capacity 3,000, stock 300 and no inbound shipment.</p>
+<p><strong>Step 1 — Generate demand.</strong> A simulation tick draws demand around a forecast using a multiplier between 0.8 and 1.2. Suppose this day's demand is 110 units. The generator writes an event to the database outbox. Stock has not changed merely because the request returned <code>QUEUED</code>.</p>
+<p><strong>Step 2 — Publish and consume.</strong> The worker publishes the event to Kafka, receives it through the consumer and checks its event ID against the inbox. If it is new, processing continues inside a database transaction.</p>
+<p><strong>Step 3 — Update stock.</strong> Fulfilled demand is <code>min(300, 110) = 110</code>. New stock is 190. A shortage would be recorded if demand exceeded stock; the simulation does not let the balance become negative.</p>
+<p><strong>Step 4 — Calculate replenishment.</strong> Target is <code>min(3000, round(100×7)) = 700</code>. Available inventory position in this simplified model is <code>stock + inbound = 190 + 0 = 190</code>. Shortfall is <code>max(0, 700 - 190) = 510</code>.</p>
+<p><strong>Step 5 — Optimize.</strong> Suppose a feasible allocation of 510 units has a total actual cost of $2,142. Forecast provenance, risk results and retrieved policy passages support the planning record. Confidence is the heuristic 0.9 because allocation is feasible.</p>
+<p><strong>Step 6 — Apply policy.</strong> If allocated supplier risk is 0.6, the plan is pending even though the value is below $10,000. If risk were 0.2, severity noncritical and the other checks passed, automatic approval would be possible. Price alone is insufficient.</p>
+<p><strong>Step 7 — Review.</strong> An authorized user approves the pending plan with a reason. That transaction stores the approval and queues <code>decision.approved</code>. The UI click is not a direct call to a real supplier.</p>
+<p><strong>Step 8 — Execute.</strong> The worker rechecks current policy and capacity, then creates a simulated purchase order and shipment. The decision becomes <code>EXECUTED</code>. An <code>execution.completed</code> event is written to the outbox in the same transaction.</p>
+<p><strong>Step 9 — Replan.</strong> When the execution event is consumed, the planner now sees 190 stock plus 510 inbound = 700. It returns <code>NO_ACTION</code>. Accounting for inbound commitments prevents immediately buying the same shortfall again.</p>
+<p><strong>Step 10 — Receive.</strong> Later ticks advance shipment age. If the simulated arrival condition is met and warehouse capacity permits it, receipt updates stock and marks the purchase order <code>RECEIVED</code>. Further demand may already have reduced stock; receipt is not necessarily a return to the original target.</p>
+<p>Now explain the flow again using only these nouns: <strong>event, outbox, Kafka, inbox, stock, forecast, optimizer, policy, order, replan</strong>. If you can explain why each exists, you understand the core of the project.</p>
+<label class="complete"><input type="checkbox" data-chapter="17-one-complete-numerical-journey"> I can explain this chapter without notes</label></section><section class="chapter" id="section-18-kafka-and-reliable-event-processing" aria-labelledby="18-kafka-and-reliable-event-processing"><h2 id="18-kafka-and-reliable-event-processing">18 Kafka and reliable event processing</h2>
+<p>A <strong>producer</strong> sends messages. A <strong>broker</strong> stores them. A <strong>topic</strong> is a named message stream. A <strong>partition</strong> is an ordered log within a topic. An <strong>offset</strong> is a message position in that partition. A <strong>consumer group</strong> tracks consumption and distributes partitions among its consumers.</p>
+<p>NEXUS defines four topics: <code>nexus.simulation</code>, <code>nexus.execution</code>, <code>nexus.state</code>, and <code>nexus.dead-letter</code>. The state worker consumes the first three. Each topic currently has one partition and replication factor one. The consumer group is <code>nexus-state-v1</code>; automatic offset commit is disabled.</p>
+<p>Kafka guarantees ordering within a partition, not a global order across all topics. The current single-partition simulation stream preserves its enqueue order, and warehouse tick checks reject old events. The producer key is the event ID. If scaling to multiple partitions, keying by warehouse or another business aggregate would require deliberate redesign to preserve per-entity order.</p>
+<h3 id="why-a-transactional-outbox-exists">Why a transactional outbox exists</h3>
+<p>Imagine saving a purchase order in PostgreSQL and then sending a Kafka message in two unrelated steps. If the process crashes between them, the order exists but no downstream service is notified. Reversing the order creates the opposite risk: an event may exist for a transaction that never committed.</p>
+<p>An outbox stores the intended event in the same database transaction as the state change. Either both commit or neither does. A publisher later sends pending rows to Kafka and marks them published after acknowledgement. If acknowledgement is uncertain, the row remains retryable.</p>
+<p>There is still a crash window after Kafka accepted a message but before the database marked it published. It may be sent again. This is why <strong>at-least-once transport needs idempotent processing</strong>. The producer's idempotence option is useful but does not make PostgreSQL and Kafka one atomic distributed transaction.</p>
+<h3 id="why-an-inbox-exists">Why an inbox exists</h3>
+<p>The consumer checks whether an event ID already exists in the inbox. For a new event, it changes state, queues resulting events and inserts the inbox ID in the same transaction. It commits the Kafka offset only after the database work has succeeded.</p>
+<p>If the process crashes after database commit but before offset commit, Kafka may redeliver the event. The inbox says it has already been applied, so the consumer returns <code>DUPLICATE</code> without deducting stock or creating another order.</p>
+<pre><code class="language-text">Consumer ordering
+  Read Kafka message
+  Begin database transaction
+  Check inbox
+  Apply business operation and create resulting outbox events
+  Record event ID in inbox
+  Commit database transaction
+  Commit Kafka offset
+</code></pre>
+<h3 id="failure-cases-to-know">Failure cases to know</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Failure point</th>
+<th>Expected behavior</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Before database commit</td>
+<td>State change rolls back</td>
+<td>Database transaction</td>
+</tr>
+<tr>
+<td>After DB commit, before Kafka publish</td>
+<td>Pending event remains available</td>
+<td>Outbox</td>
+</tr>
+<tr>
+<td>After publish, before published flag</td>
+<td>Duplicate publication is possible</td>
+<td>Inbox deduplication protects effects</td>
+</tr>
+<tr>
+<td>After state commit, before offset commit</td>
+<td>Message can be delivered again</td>
+<td>Inbox returns duplicate</td>
+</tr>
+<tr>
+<td>Broker unavailable</td>
+<td>Outbox remains pending with attempts/error</td>
+<td>Retry on later worker iterations</td>
+</tr>
+<tr>
+<td>Invalid envelope or unsupported type</td>
+<td>Preserve failure and move to dead-letter handling</td>
+<td>Validation and failure record</td>
+</tr>
+<tr>
+<td>Transient processing failure</td>
+<td>Up to three processing attempts, then dead letter</td>
+<td>Bounded retry</td>
+</tr>
+<tr>
+<td>Database unavailable during failure persistence</td>
+<td>Offset remains uncommitted as worker fails</td>
+<td>Persistence precedes offset commit</td>
+</tr>
+</tbody>
+</table></div>
+<p>The publisher currently flushes up to five seconds per message while holding a store transaction, processing at most 50 pending rows per call. This favors simple correctness over throughput and can block other operational transactions. A more scalable publisher would claim batches with leases or row locks, publish outside long-held business locks, and acknowledge carefully.</p>
+<p>The consumer's maximum poll interval is 900,000 milliseconds. That permits relatively slow processing but is not proof of high performance. No measured throughput or latency service-level objective is recorded. Never invent an events-per-second result.</p>
+<label class="complete"><input type="checkbox" data-chapter="18-kafka-and-reliable-event-processing"> I can explain this chapter without notes</label></section><section class="chapter" id="section-19-simulation-mechanics" aria-labelledby="19-simulation-mechanics"><h2 id="19-simulation-mechanics">19 Simulation mechanics</h2>
+<p>The first initialization creates ten simulation warehouses, one per mapped M5 store, and three synthetic suppliers. Each warehouse starts with roughly three days of mean forecast stock and capacity of roughly thirty days. These are scenario settings, not measured warehouse capacities.</p>
+<p>Every tick queues one demand event per simulation warehouse. With ten warehouses, one tick means ten events; seven ticks means seventy. The API allows 1–100 ticks per request; the underlying command-line function permits up to 1,000. The random generator uses <code>seed + tick</code>, and event IDs include scenario identity, tick and warehouse identity.</p>
+<p>Demand is <code>round(forecast × uniform(0.8, 1.2))</code>, clipped at zero. Forecast indexing wraps around the 28 saved points. The simulator also draws a random value, samples a historical DataCo lead time, and carries the historical late rate. Future dates are anchored to scenario creation date plus tick, while the original forecast cutoff remains explicit in provenance.</p>
+<p>A shipment's simulated actual lead time is fixed when first processed, blending planned lead days and the sampled historical days, with an added delay when the draw indicates delay. This is a designed stochastic rule, not a learned transit-time model. Once a shipment is delivered, the handler skips it on future ticks. Its linked purchase order becomes <code>RECEIVED</code>.</p>
+<p>If capacity does not permit receipt, the simulator cannot simply add stock beyond the limit. This may leave an arrival waiting while demand continues; a richer model would represent unloading queues and receipt exceptions explicitly. Stock consumption occurs before receipt processing within a tick, another modeling convention that affects shortages.</p>
+<p>Reproducibility requires the same seed, tick, model artifacts, warehouse ordering and initial state. Reusing the same seed after stock and ticks changed is not a reset to an identical scenario. There is no universal deterministic replay of every wall-clock timestamp or generated UUID.</p>
+<label class="complete"><input type="checkbox" data-chapter="19-simulation-mechanics"> I can explain this chapter without notes</label></section><section class="chapter" id="section-20-approval-policies-and-execution-safeguards" aria-labelledby="20-approval-policies-and-execution-safeguards"><h2 id="20-approval-policies-and-execution-safeguards">20 Approval policies and execution safeguards</h2>
+<p>The policy file is <code>policies/approval.json</code>, currently version <code>1.0</code>, with execution mode <code>SIMULATION</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Current value</th>
+<th>Boundary behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Automatic approval value ceiling</td>
+<td>$10,000</td>
+<td>Value may equal the ceiling</td>
+</tr>
+<tr>
+<td>Minimum automatic confidence</td>
+<td>0.85</td>
+<td>Confidence may equal the minimum</td>
+</tr>
+<tr>
+<td>Maximum automatic delay probability</td>
+<td>0.5</td>
+<td>Risk must be strictly below it</td>
+</tr>
+<tr>
+<td>Critical severity</td>
+<td>Human review</td>
+<td>Prevents automatic approval</td>
+</tr>
+<tr>
+<td>Executive-review threshold</td>
+<td>$100,000</td>
+<td>Equal or greater requires ADMIN/EXECUTIVE review</td>
+</tr>
+<tr>
+<td>Maximum plan value</td>
+<td>$5,000,000</td>
+<td>Above this is blocked</td>
+</tr>
+<tr>
+<td>Allowed action types</td>
+<td>Purchase order, reroute, inventory transfer</td>
+<td>Does not imply all types have equally complete UI planners</td>
+</tr>
+</tbody>
+</table></div>
+<p>The executor implements an inventory-transfer branch, but the primary graph generates purchase orders and a separate endpoint creates reroute plans. A complete policy-driven transfer-plan authoring workflow is not exposed in the same way. Ordinary manual inventory transfers also exist as a separate operational workflow.</p>
+<h3 id="state-changes">State changes</h3>
+<pre><code class="language-text">Feasible plan -&gt; PENDING -&gt; APPROVED -&gt; EXECUTED
+                       -&gt; REJECTED
+Feasible bounded plan -&gt; AUTO_APPROVED -&gt; EXECUTED
+Infeasible or prohibited plan -&gt; BLOCKED
+
+Purchase order: ISSUED -&gt; RECEIVED
+Shipment: IN_TRANSIT / DELAYED / REROUTED -&gt; DELIVERED
+</code></pre>
+<p>Before executing a purchase order, the code checks approval state, simulation source/mode, allowed type, maximum value and policy version. Automatic decisions receive additional confidence/value/severity/risk checks. Allocations must have positive quantity and cost; the computed allocation value must match the approved value.</p>
+<p>Destination capacity is checked against current stock, existing inbound shipments and the proposed new quantity. Supplier existence/source and per-order capacity are rechecked. This matters because a plan that was feasible when created may no longer be feasible when approved.</p>
+<p>Execution stores orders, shipments, decision status and the resulting outbox event within one transaction. If the decision is already <code>EXECUTED</code>, repeating execution returns it rather than creating duplicate orders. That protects the same decision ID, not every semantically similar order created under a different decision ID.</p>
+<p>Rerouting checks the active shipment and destination. Changing destination emits replanning events for both the original and new destinations, because one loses expected inbound stock and the other gains it. The direct manual reroute endpoint rejects simulation shipments so that path cannot bypass the approved reroute-plan workflow.</p>
+<p>Limitations worth admitting: there is no maker-checker separation that prevents the same authorized user proposing and approving; JSON policy changes are not managed by a complete administrative workflow; a changed policy can invalidate an old approval without automatically providing a polished replacement-plan flow; supplier prices and global shared capacity are not fully reconciled at execution. These are future hardening opportunities, not reasons to pretend the existing checks are absent.</p>
+<label class="complete"><input type="checkbox" data-chapter="20-approval-policies-and-execution-safeguards"> I can explain this chapter without notes</label></section><section class="chapter" id="section-21-transactions-concurrency-and-security" aria-labelledby="21-transactions-concurrency-and-security"><h2 id="21-transactions-concurrency-and-security">21 Transactions concurrency and security</h2>
+<p><strong>Atomicity</strong> means all related changes happen or none do. <strong>Consistency</strong> means the application and database enforce their defined invariants. <strong>Isolation</strong> controls interference between concurrent transactions. <strong>Durability</strong> means committed data survives ordinary process restarts when storage remains available. These are the ACID properties; they do not mean a single laptop cannot lose its disk.</p>
+<p>The PostgreSQL store takes a transaction-scoped advisory lock, <code>pg_advisory_xact_lock(72819402)</code>, to serialize store transactions. SQLite uses <code>BEGIN IMMEDIATE</code>. A separate schema initialization lock prevents concurrent create-table races. Locks keep operations simple and predictable, but a global lock reduces concurrency and can hold API requests behind slow planning or publishing.</p>
+<p>A future design could use relational rows, <code>SELECT ... FOR UPDATE</code>, optimistic version checks and short transactions around particular business aggregates. It must preserve invariants; replacing locks with parallel execution without redesign is unsafe.</p>
+<h3 id="authentication-and-authorization">Authentication and authorization</h3>
+<p>Authentication asks “who are you?” Authorization asks “may you perform this action?” NEXUS uses server-side sessions, not JWTs. Password hashes use scrypt with a random 16-byte salt, <code>n=16384</code>, <code>r=8</code>, and <code>p=1</code>. The salt prevents identical passwords from producing identical stored hashes and makes precomputed attacks less useful; hashing is not reversible encryption.</p>
+<p>Login produces a random session token. The browser receives the token in an HttpOnly, SameSite Strict cookie; the database stores its SHA-256 hash and an expiry. Sessions last 43,200 seconds, or twelve hours. Logout removes the stored session. Constant-time comparison is used for password-hash comparison.</p>
+<p>The first owner becomes ADMIN. Manager-protected actions accept ADMIN, MANAGER or EXECUTIVE, with an additional executive restriction for high-value approvals. Full invitations, self-service password recovery, SSO, multi-factor authentication and company isolation are not present.</p>
+<p>Login attempts are throttled by client address: ten failed attempts within a fifteen-minute window lead to a 429 response. The API checks allowed origins and rejects browser requests marked cross-site for mutations. Secure-cookie behavior is configurable and false for local HTTP; public HTTPS deployment needs an appropriate secure-cookie and reverse-proxy configuration.</p>
+<p><strong>CORS is not authentication.</strong> It affects browser cross-origin access, while the session and role checks protect the API. An allowed origin does not turn an anonymous request into an authorized one. HttpOnly reduces direct cookie access from JavaScript but does not make the entire application immune to XSS.</p>
+<p>SQL values use bound parameters. A small PostgreSQL adapter translates SQLite-style placeholders and certain SQL patterns; it is not a general ORM or a full migration framework. Historical bulk-import identifiers come from developer-defined table metadata, not arbitrary user-provided SQL names.</p>
+<label class="complete"><input type="checkbox" data-chapter="21-transactions-concurrency-and-security"> I can explain this chapter without notes</label></section><section class="chapter" id="section-22-frontend-apis-and-user-journeys" aria-labelledby="22-frontend-apis-and-user-journeys"><h2 id="22-frontend-apis-and-user-journeys">22 Frontend APIs and user journeys</h2>
+<p><code>components/ControlTower.jsx</code> provides the main operational UI. <code>components/PlatformWorkspace.jsx</code> provides data, forecasts, simulation, purchase orders, agent runs, knowledge and monitoring. <code>app/page.js</code> loads the control tower; <code>next.config.js</code> configures standalone output and the backend API proxy.</p>
+<p>The UI refreshes operational state by polling; a backend WebSocket endpoint exists but is not the primary UI transport. Do not claim that every dashboard update is WebSocket-driven. Recharts draws the charts, and Lucide supplies interface icons.</p>
+<h3 id="apis-you-should-recognize">APIs you should recognize</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Purpose</th>
+<th>Key fact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /health</code></td>
+<td>API/database liveness</td>
+<td>Does not prove Kafka and every model are healthy</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/snapshot</code></td>
+<td>Operational view</td>
+<td>Includes sample/local baseline information</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/platform/status</code></td>
+<td>Sources, models, worker, plans and monitoring</td>
+<td>Authenticated platform overview</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/platform/forecasts</code></td>
+<td>Trained 28-day forecasts</td>
+<td>Different from the older baseline endpoint</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/platform/simulate</code></td>
+<td>Queue scenario ticks</td>
+<td>Returns queued work, not completed consumption</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/platform/plan</code></td>
+<td>Replenishment planning</td>
+<td>Requires a mapped simulation warehouse</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/agents/decision/{id}/approve</code></td>
+<td>Approve or reject with reason</td>
+<td>Queues execution for typed simulation actions</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/platform/execute/{id}</code></td>
+<td>Execute an approved simulated decision</td>
+<td>State and policy are rechecked</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/platform/reroute-plan</code></td>
+<td>Propose a simulated shipment change</td>
+<td>Review precedes execution</td>
+</tr>
+<tr>
+<td><code>GET /api/v1/platform/rag?q=...</code></td>
+<td>Retrieve cited passages</td>
+<td>Extractive response</td>
+</tr>
+<tr>
+<td><code>POST /api/v1/platform/documents</code></td>
+<td>Add retrieval text</td>
+<td>Does not change authoritative policy</td>
+</tr>
+<tr>
+<td><code>GET /metrics</code></td>
+<td>Prometheus-formatted counters/gauges</td>
+<td>Endpoint, not a full installed monitoring cluster</td>
+</tr>
+</tbody>
+</table></div>
+<p>HTTP 401 means authentication is missing/invalid; 403 means the user or request is not permitted; 409 represents a state conflict such as repeated review or invalid execution state; 422 indicates request validation failure; 429 means throttling. A 202 simulation response means work was accepted for asynchronous processing.</p>
+<p>The model summary and forecast files are separate from live inventory state. A request can display a forecast without rerunning training. The graph also uses an average of the forecast horizon for its target rule, while the simulator consumes individual daily forecast points. That difference is an intentional simplification to explain.</p>
+<label class="complete"><input type="checkbox" data-chapter="22-frontend-apis-and-user-journeys"> I can explain this chapter without notes</label></section><section class="chapter" id="section-23-testing-evidence-and-what-it-proves" aria-labelledby="23-testing-evidence-and-what-it-proves"><h2 id="23-testing-evidence-and-what-it-proves">23 Testing evidence and what it proves</h2>
+<p>The saved verification report records <strong>42 passing backend tests</strong> and <strong>3 passing browser workflow tests</strong>, along with production-browser, pipeline, live-integration, outage/restart and restore checks. Those are results from the tested version, not an assertion that all possible defects are eliminated or that the tests were rerun while writing this handbook.</p>
+<h3 id="test-layers">Test layers</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Examples in this project</th>
+<th>What it establishes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unit and function-level checks</td>
+<td>Lag leakage, metrics, policy boundaries, optimizer infeasibility</td>
+<td>Specific logic behaves as expected on controlled cases</td>
+</tr>
+<tr>
+<td>API/workflow tests</td>
+<td>Authentication, role restriction, transfers, review conflicts</td>
+<td>Application behavior across endpoint and store boundaries</td>
+</tr>
+<tr>
+<td>Planning/execution tests</td>
+<td>Graph results, approved execution, duplicate receipt, rerouting</td>
+<td>Connected internal workflow invariants</td>
+</tr>
+<tr>
+<td>Browser tests</td>
+<td>Transfer persistence, disruption review/audit, policy retrieval and mobile navigation</td>
+<td>User actions work through rendered pages</td>
+</tr>
+<tr>
+<td>Real-stack integration</td>
+<td>PostgreSQL plus Kafka execution and replanning</td>
+<td>Actual services cooperate beyond mocks</td>
+</tr>
+<tr>
+<td>Fault injection</td>
+<td>Stop broker, retain events, restart worker</td>
+<td>Recovery behavior under deliberately introduced failure</td>
+</tr>
+<tr>
+<td>Backup restore</td>
+<td>Restore into disposable database, count demand rows</td>
+<td>The tested backup can restore that data successfully</td>
+</tr>
+</tbody>
+</table></div>
+<p>Tests use small synthetic fixtures to isolate behavior. For example, the risk model in a planning fixture is a dummy classifier. That does not invalidate the test, but it means the test proves workflow behavior rather than real model quality. Real model evaluation is recorded separately.</p>
+<p>Representative assertions include: changing future history does not alter earlier lag features; repeated events do not deduct stock twice; a capacity change causes execution to roll back; an executive-only decision rejects a manager; an existing Kafka topic set does not cause an empty create-topics request; and simulated receipts cannot repeat.</p>
+<p>No comprehensive load test, penetration test, multi-region failover test or real vendor integration test is claimed. CI is configured to run backend and frontend/browser checks, but a local successful run is not evidence that a remote CI pipeline has already completed unless its logs are inspected.</p>
+<h3 id="historical-fixes-you-can-discuss-accurately">Historical fixes you can discuss accurately</h3>
+<p>The workspace's development/verification history exposed several useful engineering lessons: a public-data query needed valid source syntax; concurrent schema creation needed locking; restarting Kafka administration failed on an empty topic-creation list; a launcher called <code>platform.py</code> shadowed Python's standard-library <code>platform</code> module; and simulation reroutes needed to be rejected on the direct manual path. Describe these as observed project issues and fixes. Do not invent that you personally diagnosed them without assistance if that is not what happened.</p>
+<label class="complete"><input type="checkbox" data-chapter="23-testing-evidence-and-what-it-proves"> I can explain this chapter without notes</label></section><section class="chapter" id="section-24-deployment-monitoring-and-recovery" aria-labelledby="24-deployment-monitoring-and-recovery"><h2 id="24-deployment-monitoring-and-recovery">24 Deployment monitoring and recovery</h2>
+<p>The local stack consists of Next.js, FastAPI, a Python event worker, PostgreSQL, Kafka and MLflow. PostgreSQL and Kafka use persistent named volumes. Model artifacts are mounted from <code>runtime/artifacts</code>; MLflow keeps its backend/artifacts in a separate volume.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Host address</th>
+<th>Container-side detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard</td>
+<td><code>http://localhost:3000</code></td>
+<td>Standalone Next.js server</td>
+</tr>
+<tr>
+<td>API and docs</td>
+<td><code>http://localhost:8000/docs</code></td>
+<td>FastAPI</td>
+</tr>
+<tr>
+<td>MLflow</td>
+<td><code>http://localhost:5001</code></td>
+<td>Internal port 5000</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td><code>127.0.0.1:5433</code></td>
+<td>Internal port 5432</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td><code>localhost:19092</code></td>
+<td>Internal broker listener 29092</td>
+</tr>
+</tbody>
+</table></div>
+<p>Inside a container, <code>localhost</code> means that container itself. The worker therefore uses <code>kafka:29092</code>, and API connections use <code>postgres:5432</code>. Host-side tools use the published ports. This distinction explains many common connection failures.</p>
+<p>Use these commands from the repository root. Commands are instructions for you to run during practice, not operations automatically performed by this guide.</p>
+<pre><code class="language-powershell"># Start an already prepared workspace
+python scripts/deploy.py up
+
+# Inspect services without changing records
+python scripts/deploy.py status
+
+# Prepare a fresh database after supplying the three M5 files
+python scripts/deploy.py bootstrap
+
+# Tests in the project Python environment
+.venv\Scripts\python.exe -m pytest -q
+npm run lint
+npm run build
+
+# Browser tests use separate test ports and a test database
+$env:NEXUS_TEST_BROWSER = 'chrome'
+npm run test:e2e
+
+# This deliberately creates simulation activity in the live local stack
+python scripts/deploy.py verify
+
+# Save a database backup
+python scripts/deploy.py backup
+</code></pre>
+<p>On a fresh machine, install Docker, use the repository's Python/Node setup instructions, and supply <code>sales_train_validation.csv</code>, <code>calendar.csv</code> and <code>sell_prices.csv</code> under <code>data/raw/m5</code>. The release archive does not contain the full raw datasets or database volumes. Public logistics/procurement data can be downloaded by bootstrap. Data licenses and source terms still apply.</p>
+<h3 id="monitoring-interpretation">Monitoring interpretation</h3>
+<p>The status endpoint classifies the worker as healthy when its heartbeat is less than thirty seconds old. Queue counts show pending/published outbox entries, processed inbox events and dead letters. API counters record requests, server errors and cumulative request time. They are process-local counters and reset when the API restarts; they are not latency percentiles or durable telemetry history.</p>
+<p>The simulation's demand monitor retains the latest 100 actual-versus-baseline observations and computes WAPE. Above 35%, it reports <code>ALERT</code>. This is an error-based indicator over simulated data, not a formal statistical drift detector. With normal demand generated within roughly ±20% of the baseline, a 35% WAPE alert is unlikely under ordinary configured generation; the monitor needs broader scenarios and appropriate thresholds to demonstrate meaningful anomaly detection.</p>
+<p>MLflow shows offline experiment performance. It is not an online accuracy feed from real customers. Agent runs record duration and reports, but successful execution of a graph does not prove the plan is commercially optimal or the explanations are useful.</p>
+<h3 id="recovery-tools-and-cautions">Recovery tools and cautions</h3>
+<p><code>scripts/check_recovery.py</code> intentionally stops this project's Kafka broker and restarts its worker. It is a fault-injection test, not a routine status command. Run it only when a brief local interruption is acceptable. <code>scripts/check_backup.py</code> restores a backup into a temporary database, checks the demand count, and removes that temporary database. It does not replace the live database.</p>
+<p><code>docker compose down</code> stops a stack while preserving named volumes by default. Adding <code>-v</code> can destroy persisted volumes; it is not a troubleshooting shortcut. Back up the database, model artifacts and MLflow state separately. A restoration check does not imply an automated backup schedule or a tested business recovery-time guarantee.</p>
+<label class="complete"><input type="checkbox" data-chapter="24-deployment-monitoring-and-recovery"> I can explain this chapter without notes</label></section><section class="chapter" id="section-25-code-reading-map-and-trace-exercises" aria-labelledby="25-code-reading-map-and-trace-exercises"><h2 id="25-code-reading-map-and-trace-exercises">25 Code reading map and trace exercises</h2>
+<p>The workspace root at the time of writing is <code>D:\supply chain\nexus-scct</code>. Paths below are relative to that root so the guide remains useful after moving the project. Functions are more stable reference points than line numbers.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Read these parts</th>
+<th>Interview concept</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main.py</code></td>
+<td>Environment loading and application export</td>
+<td>Entry point</td>
+</tr>
+<tr>
+<td><code>nexus/api.py</code></td>
+<td><code>create_app</code>, session helpers, review endpoint</td>
+<td>Authentication, API policy and transactions</td>
+</tr>
+<tr>
+<td><code>nexus/store.py</code></td>
+<td><code>transaction</code>, <code>enqueue</code>, PostgreSQL adapter</td>
+<td>Atomicity, persistence, outbox</td>
+</tr>
+<tr>
+<td><code>nexus/platform/schema.py</code></td>
+<td>Tables, <code>initialize</code>, <code>upsert_frame</code></td>
+<td>Keys, bulk load, schema concurrency</td>
+</tr>
+<tr>
+<td><code>nexus/platform/data.py</code></td>
+<td><code>ingest_m5</code>, <code>ingest_public</code></td>
+<td>Validation and provenance</td>
+</tr>
+<tr>
+<td><code>nexus/platform/models.py</code></td>
+<td><code>features</code>, <code>recursive_forecast</code>, <code>train_demand</code>, <code>train_risk</code></td>
+<td>Leakage, evaluation and inference</td>
+</tr>
+<tr>
+<td><code>nexus/platform/intelligence.py</code></td>
+<td><code>retrieve</code>, <code>optimize_procurement</code>, <code>build_graph</code>, <code>plan_replenishment</code></td>
+<td>Retrieval, optimization and orchestration</td>
+</tr>
+<tr>
+<td><code>nexus/platform/simulator.py</code></td>
+<td><code>initialize_scenario</code>, <code>simulate</code></td>
+<td>Synthetic entity mapping and seeded events</td>
+</tr>
+<tr>
+<td><code>nexus/platform/streaming.py</code></td>
+<td><code>publish_pending</code>, <code>process_event</code>, <code>worker</code></td>
+<td>Messaging and recovery</td>
+</tr>
+<tr>
+<td><code>nexus/platform/execution.py</code></td>
+<td><code>execute_decision</code></td>
+<td>Approval, revalidation and idempotence</td>
+</tr>
+<tr>
+<td><code>nexus/platform/routes.py</code></td>
+<td>Platform endpoints</td>
+<td>UI-to-platform contract</td>
+</tr>
+<tr>
+<td><code>components/ControlTower.jsx</code></td>
+<td>Navigation, forms and operational views</td>
+<td>Frontend state and user journeys</td>
+</tr>
+<tr>
+<td><code>components/PlatformWorkspace.jsx</code></td>
+<td>Forecasts, simulation and monitoring</td>
+<td>Advanced platform UI</td>
+</tr>
+<tr>
+<td><code>tests/test_platform.py</code></td>
+<td>Scenario fixture and invariant tests</td>
+<td>Testing strategy</td>
+</tr>
+<tr>
+<td><code>tests/test_workflows.py</code></td>
+<td>Authentication and workflow tests</td>
+<td>API correctness</td>
+</tr>
+<tr>
+<td><code>docker-compose.platform.yml</code></td>
+<td>Services, ports, volumes</td>
+<td>Deployment topology</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>nexus/domain.py</code> contains the earlier baseline forecasting and rule-based disruption analysis. <code>main_research.py</code>, the research requirements/Compose files and original experimental modules are not the active platform path. Start code explanations from the actual imports and launch command rather than assuming every file in the repository runs.</p>
+<h3 id="trace-exercise-a">Trace exercise A</h3>
+<p>Start at the simulation button in <code>PlatformWorkspace.jsx</code>. Follow the request to the route, <code>simulate</code>, <code>Store.enqueue</code>, <code>publish_pending</code>, <code>process_event</code>, <code>plan_replenishment</code>, and <code>build_graph</code>. For every boundary, say whether the call is synchronous Python, HTTP, a database operation, or Kafka transport.</p>
+<h3 id="trace-exercise-b">Trace exercise B</h3>
+<p>Start at decision approval. Find the session/role check, the pending-state check, the database approval update and queued event. Then locate the consumer's <code>decision.approved</code> branch and executor. Identify exactly where the purchase order, shipment, decision state and resulting outbox row commit together.</p>
+<h3 id="trace-exercise-c">Trace exercise C</h3>
+<p>Find the exact feature-building code that shifts before rolling. Explain why applying a rolling mean first and shifting incorrectly across combined stores could leak data or mix series. Then find recursive forecasting's <code>values.append(value)</code> and explain its role.</p>
+<label class="complete"><input type="checkbox" data-chapter="25-code-reading-map-and-trace-exercises"> I can explain this chapter without notes</label></section><section class="chapter" id="section-26-interview-question-bank" aria-labelledby="26-interview-question-bank"><h2 id="26-interview-question-bank">26 Interview question bank</h2>
+<p>Try answering each question aloud before revealing the suggested answer. These are technically accurate answer patterns, not a script to recite word for word. Expect follow-ups that ask you to show the relevant code or calculate an example.</p>
+<h3 id="product-and-architecture-questions">Product and architecture questions</h3>
+<details class="qa">
+<summary>1 What is NEXUS and what problem does it solve</summary>
+<p>NEXUS is a supply-chain intelligence simulator that connects historical demand forecasts and delay-risk predictions to constrained replenishment plans, approvals and persistent simulated execution. It addresses the gap between seeing an operational problem and taking a controlled, traceable action. It demonstrates this workflow locally; real commercial benefits have not been measured.</p>
+</details>
+<details class="qa">
+<summary>2 Why is it more than a dashboard</summary>
+<p>The dashboard is the interface. Behind it, events change state, models support planning, an optimizer produces allocations, policies gate execution, and execution emits new events that trigger replanning. The persistent feedback loop is the central distinction. Show an order and its execution/replan history rather than only charts.</p>
+</details>
+<details class="qa">
+<summary>3 What is real and what is simulated</summary>
+<p>Historical source data, model training/evaluation, PostgreSQL transactions, Kafka messages and policy enforcement are real computations. The future operating scenario and ERP/carrier effects are synthetic. No real purchase is submitted. Separate source histories are not falsely treated as a single company's records.</p>
+</details>
+<details class="qa">
+<summary>4 Why use both PostgreSQL and Kafka</summary>
+<p>PostgreSQL stores authoritative current state and transactions. Kafka carries events that consumers process and can replay. Their responsibilities differ. The outbox bridges the database/message boundary, and the inbox prevents duplicate effects. A smaller deployment could use a simpler job queue; Kafka is a deliberate architectural learning tradeoff here.</p>
+</details>
+<details class="qa">
+<summary>5 Is this a microservices system</summary>
+<p>It has separately deployed services and a separate event-worker process, but much of the business logic shares one Python package and one operational database. I would describe it as a modular application with an event-driven worker and supporting services, rather than claim fully independent domain microservices with isolated data ownership.</p>
+</details>
+<details class="qa">
+<summary>6 What is the most important design choice</summary>
+<p>Connecting business state and outgoing events transactionally, then making consumed effects idempotent, is a strong choice to discuss. It prevents a demonstration from appearing correct only when every service stays healthy. Another defensible choice is the explicit separation of source data from scenario entities. Explain one choice deeply rather than declaring all choices equally important.</p>
+</details>
+<details class="qa">
+<summary>7 What is the largest current limitation</summary>
+<p>The operating model uses aggregate units and synthetic commercial constraints, so it is not yet a company-specific SKU purchasing system. It also lacks live ERP/carrier integration, robust user administration and production-scale concurrency. The strongest answer connects a specific limitation to a concrete next implementation step.</p>
+</details>
+<details class="qa">
+<summary>8 Can a company upload its own data today</summary>
+<p>Users can enter operational records and add document text; a legacy daily-demand API/import path also exists. There is no complete guided company-data onboarding workflow that remaps products, validates all relationships, retrains advanced models and switches the whole planning system. The M5/DataCo pipeline remains configured for those source schemas.</p>
+</details>
+<h3 id="data-and-machine-learning-questions">Data and machine learning questions</h3>
+<details class="qa">
+<summary>9 Did you train the model on eleven million rows</summary>
+<p>No. The foundation stores 11,128,850 product-day observations for the selected 365-day window. The demand model uses all 1,913 days aggregated to ten stores, giving 19,130 store-day observations before partitioning and feature warmup. Distinguishing stored data scale from training scale is essential.</p>
+</details>
+<details class="qa">
+<summary>10 Why did you keep the datasets separate</summary>
+<p>M5, DataCo and the San Francisco extract do not establish shared company/product/supplier identities. Joining on superficially similar labels would fabricate relationships. Namespaced IDs preserve identity, and scenario mappings are explicitly synthetic. DataCo provides transferable patterns, not proof that its shipments belong to M5 stores.</p>
+</details>
+<details class="qa">
+<summary>11 Why chronological splitting rather than random splitting</summary>
+<p>Forecasting predicts later observations using earlier information. A random split can train on future periods relative to validation rows and distort the deployment problem. Chronological partitions preserve the direction of time. Random splitting can also leak correlated order lines in risk prediction, so that model aggregates to whole orders first.</p>
+</details>
+<details class="qa">
+<summary>12 How do you prevent leakage in rolling features</summary>
+<p>Features are grouped by store and the target series is shifted before a rolling mean or standard deviation is calculated. Thus the target day's actual demand is not an input. Evaluation recursively appends predictions rather than feeding unknown future actuals into later forecast steps. These mechanisms address different leakage paths.</p>
+</details>
+<details class="qa">
+<summary>13 Why use a seasonal naive baseline</summary>
+<p>Weekly demand patterns make a seven-day seasonal baseline a meaningful low-complexity comparison. It tells us whether the boosted model improves over simply repeating the previous week. The implementation selects using validation WAPE and would use the baseline for future forecasts if it won that comparison.</p>
+</details>
+<details class="qa">
+<summary>14 Why gradient boosting rather than an LSTM</summary>
+<p>The implemented problem becomes tabular regression after lag and calendar feature engineering. Gradient boosting can capture nonlinear interactions without a large sequence-model training setup. The measured result is against a seasonal baseline, not against an LSTM. I would not claim LSTMs are worse without a fair chronological comparison and matched tuning budget.</p>
+</details>
+<details class="qa">
+<summary>15 Is 5.92 percent WAPE the same as 94.08 percent accuracy</summary>
+<p>No. WAPE is aggregate absolute regression error divided by aggregate actual demand. Classification accuracy counts correct labels. Subtracting WAPE from 100 does not create a standard classification accuracy measure. State the metric, grain, holdout dates and baseline directly.</p>
+</details>
+<details class="qa">
+<summary>16 What exactly improved by about forty five percent</summary>
+<p>Relative final-holdout WAPE fell by about 44.9%, from approximately 10.7451% for the baseline to 5.9211% for the candidate. The difference is about 4.824 percentage points. It is not a measured 45% reduction in inventory costs, stockouts or total forecast error under all conditions.</p>
+</details>
+<details class="qa">
+<summary>17 What if actual demand is zero</summary>
+<p>Individual zero-demand rows still contribute absolute error to WAPE's numerator. If total absolute actual demand is zero for the entire evaluation set, WAPE is undefined and the code returns None. MAE and RMSE remain computable. A report should not silently replace undefined WAPE with zero.</p>
+</details>
+<details class="qa">
+<summary>18 What does recursive forecasting mean</summary>
+<p>The model predicts one step, appends that prediction to the available history and uses it for later lags and rolling inputs. This avoids using future ground truth during a multi-day forecast. The tradeoff is error propagation. Direct multi-horizon methods are a reasonable future comparison but are not implemented here.</p>
+</details>
+<details class="qa">
+<summary>19 Did the final test influence model selection</summary>
+<p>Selection between candidate and baseline uses only the earlier validation WAPE. The final test reports both methods without changing selection. However, the empirical future range width is calculated from final-holdout errors, so that interval width does use the test outcomes and does not have separately verified coverage. Keep those two statements distinct.</p>
+</details>
+<details class="qa">
+<summary>20 Are the prediction intervals statistically guaranteed</summary>
+<p>No. They are a fixed empirical width based on the selected model's holdout absolute errors, with a nonnegative lower bound. The code explicitly disclaims a coverage guarantee. A stronger design would reserve separate calibration data, inspect coverage by horizon/store and test the resulting ranges on a later untouched period.</p>
+</details>
+<details class="qa">
+<summary>21 Why refit the demand model after testing</summary>
+<p>After fixing the evaluation and selection, more historical observations can be used to fit the model that generates future predictions. The saved test metric still describes the earlier evaluation procedure, not a new in-sample score of the full-history model. Evaluation and the final serving artifact are related but different objects.</p>
+</details>
+<details class="qa">
+<summary>22 Is the delay classifier a supplier risk model</summary>
+<p>Its target is delivery delay in historical order data. It does not measure bankruptcy, credit risk or broad supplier failure. The planning workflow applies it to synthetic supplier shipment features, with domain-shift limitations. The UI's manually assessed supplier risk scores are also distinct from this trained probability.</p>
+</details>
+<details class="qa">
+<summary>23 Why exclude actual shipping duration from risk features</summary>
+<p>Actual shipping duration is known after the outcome and would reveal or closely encode delay. A decision-time model must use information available when making the decision, such as scheduled days and order characteristics. Extremely high performance from outcome-derived features would be misleading rather than impressive.</p>
+</details>
+<details class="qa">
+<summary>24 What does ROC AUC of 0.733 mean</summary>
+<p>It describes how well the model ranks positive versus negative cases across thresholds. Informally, it is the probability of assigning a higher score to a randomly selected positive than a negative, with the usual treatment of ties. It does not mean 73.3% of orders are correctly classified at the deployed threshold.</p>
+</details>
+<details class="qa">
+<summary>25 Why report Brier score as well as accuracy</summary>
+<p>Planning uses probabilities, so a metric that evaluates probability forecasts is valuable. Brier score averages squared probability errors, whereas accuracy only checks which side of a threshold a prediction falls on. A confidently wrong forecast is penalized strongly by Brier score. Calibration plots and decision-cost evaluation would still be useful additions.</p>
+</details>
+<details class="qa">
+<summary>26 What happens when the data distribution changes</summary>
+<p>Historical model performance may no longer transfer. The current simulation has a rolling demand-error indicator, but it does not implement comprehensive drift detection or automatic retraining. A real deployment should monitor feature/label changes, missingness, calibration and performance by segment, then validate a retrained model before activating it.</p>
+</details>
+<h3 id="agents-retrieval-and-optimization-questions">Agents retrieval and optimization questions</h3>
+<details class="qa">
+<summary>27 Are these autonomous LLM agents</summary>
+<p>No. They are named tool-based steps in a fixed LangGraph workflow. The nodes call trained models, retrieval, inventory logic and optimization; no LLM selects the actions. I would describe the implementation as explicit agent-style orchestration and avoid implying autonomous generative reasoning that the code does not perform.</p>
+</details>
+<details class="qa">
+<summary>28 Why use LangGraph if the workflow is sequential</summary>
+<p>It provides explicit state contracts and identifiable nodes that can be extended with branching and checkpoints. For this simple graph, ordinary Python functions could also work and would reduce dependencies. The current benefit is workflow organization and inspectability; durable graph checkpointing and parallel agent execution are not configured.</p>
+</details>
+<details class="qa">
+<summary>29 Does retrieval change the approval policy</summary>
+<p>No. Retrieved documents are untrusted supporting context. Structured JSON policy controls permissions and thresholds. The retrieval result is attached as evidence/explanation, not executed as instructions. A text document claiming unlimited purchasing authority cannot change the actual executor's limits.</p>
+</details>
+<details class="qa">
+<summary>30 What vector database and LLM are used</summary>
+<p>Neither is required in the active retrieval pipeline. It computes TF-IDF vectors in memory, compares them with cosine similarity and returns cited excerpts. This is an extractive retrieval implementation. Semantic embeddings, a vector index and LLM synthesis are possible enhancements, not existing components.</p>
+</details>
+<details class="qa">
+<summary>31 Why not choose the cheapest supplier directly</summary>
+<p>The cheapest supplier may have insufficient capacity or a larger delay-risk penalty. The solver considers all suppliers under quantity and budget constraints. Its objective favors cost adjusted by a risk heuristic. A direct cheapest-first rule could be adequate in special cases, but optimization makes the stated constraints explicit and extensible.</p>
+</details>
+<details class="qa">
+<summary>32 Is the optimization objective expected monetary loss</summary>
+<p>Not as currently written. Cost times one plus delay probability is a risk-weighted objective, but there is no estimated monetary cost per delay. To claim expected loss, I would need a defensible consequence model, such as units short multiplied by an estimated shortage cost under arrival scenarios, and validate those assumptions.</p>
+</details>
+<details class="qa">
+<summary>33 What if no feasible procurement plan exists</summary>
+<p>The optimizer returns infeasible and the planner blocks execution with a reason. It should not violate budget/capacity to produce an apparently successful order. A future operator workflow could offer explicit alternatives such as increasing the budget, reducing the target or reviewing new suppliers; those changes require authorized choices.</p>
+</details>
+<details class="qa">
+<summary>34 Does feasible always mean optimal</summary>
+<p>No. A feasible solution satisfies constraints. An optimal solution has the best objective under the model and solver proof criteria. The solver accepts both states and records whether optimality was established. Even mathematical optimality only applies to the simplified model, not every unmodeled business concern.</p>
+</details>
+<details class="qa">
+<summary>35 How do you avoid repeated replenishment orders</summary>
+<p>The planner first checks for an unresolved purchase-order decision for the warehouse. It also counts inbound shipments when calculating the shortfall. The executor is idempotent for an already executed decision. These controls address different duplication paths, but do not substitute for a company-wide uniqueness and reconciliation design.</p>
+</details>
+<details class="qa">
+<summary>36 What does planning confidence of 0.9 mean</summary>
+<p>It is assigned heuristically when optimization is feasible. It is not a probability calibrated against historical planning success. The trained supplier delay probability is a different quantity. I would label the heuristic clearly and use validated uncertainty or deterministic eligibility criteria in a production approval design.</p>
+</details>
+<h3 id="distributed-systems-and-backend-questions">Distributed systems and backend questions</h3>
+<details class="qa">
+<summary>37 What problem does the outbox solve</summary>
+<p>It prevents a database state change from committing without a persistent record of the event that should be published. The state and outbox row share a transaction. Publishing happens later, so broker outages do not require discarding the business change. Duplicate publication remains possible and is handled downstream.</p>
+</details>
+<details class="qa">
+<summary>38 What happens after a crash before offset commit</summary>
+<p>If the database transaction already committed, the event's inbox ID also committed. Redelivery returns DUPLICATE without applying the action again, then the offset can be committed. If the database transaction had not committed, it rolls back and the message can be processed normally later.</p>
+</details>
+<details class="qa">
+<summary>39 Can you claim exactly once processing</summary>
+<p>The precise claim is at-least-once message transport with idempotent database effects for an event ID, plus execution idempotence for a decision ID. Kafka producer idempotence does not create an atomic transaction spanning PostgreSQL and Kafka. Real external APIs would need their own idempotency and reconciliation strategy.</p>
+</details>
+<details class="qa">
+<summary>40 What happens if Kafka is down</summary>
+<p>Pending events remain in the PostgreSQL outbox with attempt/error information, and the publisher retries when the broker returns. The real-stack fault test verified recovery. The current publisher can hold a global store lock while waiting on broker acknowledgement, so API responsiveness during an outage is a known design tradeoff.</p>
+</details>
+<details class="qa">
+<summary>41 Is Kafka ordering global</summary>
+<p>No. Ordering is within a partition. NEXUS uses one partition per topic, but messages across simulation, execution and state topics do not have one universal order. Per-warehouse tick validation prevents applying older simulation ticks. Adding partitions requires carefully selecting entity keys and defining cross-topic consistency expectations.</p>
+</details>
+<details class="qa">
+<summary>42 Why keep dead letters</summary>
+<p>They retain payload and error information for events that cannot safely complete. Invalid events are handled directly, while other failures receive bounded attempts before dead-letter persistence. An authorized retry can queue another event after the cause is corrected. A dead-letter queue is evidence and recovery support, not automatic correction of bad business data.</p>
+</details>
+<details class="qa">
+<summary>43 Why use a global advisory lock</summary>
+<p>It preserves simple serialized state-mutation behavior across API and worker processes, reducing race conditions in a prototype with generic records. The downside is contention, especially when graph execution and publication happen inside transactions. The next step is finer-grained locking and relational invariants, not simply removing the lock.</p>
+</details>
+<details class="qa">
+<summary>44 How would you scale the worker</summary>
+<p>First measure the bottleneck. Then partition events by a stable entity key, redesign global locking, ensure per-entity idempotency and ordering, optimize artifact loading, and separate publishing from long business transactions. Multiple workers sharing a one-partition topic cannot all consume that partition concurrently. Scaling the process count alone is insufficient.</p>
+</details>
+<details class="qa">
+<summary>45 What happens if capacity changes after approval</summary>
+<p>Execution recomputes destination capacity including stock and inbound commitments. If the proposed allocation no longer fits, it raises an error and the transaction rolls back. Approval authorizes an intended action but does not freeze external business conditions. A more complete recovery UI would help replace or re-review stale plans.</p>
+</details>
+<details class="qa">
+<summary>46 Is the system event sourced</summary>
+<p>Not in the strict sense. It stores current operational records directly, alongside audit events and Kafka messages. It does not implement reconstruction of every current record solely by replaying an immutable domain-event history. I call it event-driven with transactional state, not fully event-sourced.</p>
+</details>
+<details class="qa">
+<summary>47 Why not use JSON for every table</summary>
+<p>Historical demand has stable relational keys and high row counts, making explicit schema and foreign keys useful. Flexible operational records use serialized JSON for faster prototype development, but this weakens query/index and database relationship support. A mature product would normalize critical order and inventory structures rather than treating all data equally.</p>
+</details>
+<h3 id="security-deployment-and-evidence-questions">Security deployment and evidence questions</h3>
+<details class="qa">
+<summary>48 Are you using JWT authentication</summary>
+<p>No. The application issues an opaque random session token, stores its hash and expiry server-side, and uses an HttpOnly SameSite Strict cookie. Server-side sessions make revocation straightforward. The password is separately stored as a salted scrypt hash. Token hashing and password hashing serve different purposes.</p>
+</details>
+<details class="qa">
+<summary>49 Can a manager approve a high value executive plan</summary>
+<p>The review endpoint checks the plan's required role and rejects a MANAGER when executive approval is required. ADMIN or EXECUTIVE can approve. A regression test verifies the rejection and unchanged pending status. This does not imply a complete role-administration UI or separation of proposer and reviewer.</p>
+</details>
+<details class="qa">
+<summary>50 Is Docker enough to call the project production ready</summary>
+<p>No. Containers make setup and dependency isolation easier. Production readiness also requires representative data, capacity testing, secure exposure, secrets management, backup schedules, incident response, real integration contracts and clear operational ownership. The verified scope is a local Docker simulation.</p>
+</details>
+<details class="qa">
+<summary>51 What does your health endpoint prove</summary>
+<p>It verifies the API can perform a simple database query and reports the selected storage/mode. It does not certify Kafka consumption, model freshness, retrieval quality or business correctness. Worker heartbeat and queue checks provide separate signals, and end-to-end checks provide stronger workflow evidence.</p>
+</details>
+<details class="qa">
+<summary>52 What tests are most valuable here</summary>
+<p>Tests of invariants at failure boundaries: no double stock deduction, no unapproved execution, atomic rollback on capacity failure, chronological feature behavior, order-aware splitting, and recovery after messaging failures. UI tests show workflows are usable, but correctness of these state transitions is more important than merely rendering a page.</p>
+</details>
+<details class="qa">
+<summary>53 How did you verify recovery rather than just assume it</summary>
+<p>The project contains a fault-injection script that stops its broker, queues simulation events, observes pending retryable outbox entries, brings Kafka back and waits for consumption. It then restarts the worker and verifies resumed processing. A separate restore test rebuilds a backup in a disposable database and checks the 11,128,850-row demand count.</p>
+</details>
+<details class="qa">
+<summary>54 What does a passing restore count not prove</summary>
+<p>It does not prove every application invariant, every file artifact, production recovery time or an automated backup policy. It establishes that the tested backup restores and the expected demand count is present. A broader recovery plan would check key relationships, operational records, MLflow state, application startup and documented recovery objectives.</p>
+</details>
+<details class="qa">
+<summary>55 How do you monitor model drift</summary>
+<p>The current implementation calculates rolling WAPE over the latest 100 simulation observations and flags a heuristic threshold. That is limited error monitoring, not comprehensive drift detection. A real deployment needs labeled outcomes, segment-aware performance, input-distribution checks and a controlled retraining process. Normal simulation variability may not trigger the configured alert.</p>
+</details>
+<details class="qa">
+<summary>56 What security work remains</summary>
+<p>Production identity/admin workflows, tenant isolation, secrets management, HTTPS exposure, service authentication, dependency maintenance, rate limiting beyond login and a formal security assessment. The saved report distinguishes a zero-finding production frontend dependency scan at its verification time from unresolved development-tooling advisories. A historical scan is not a permanent security guarantee.</p>
+</details>
+<h3 id="ownership-and-improvement-questions">Ownership and improvement questions</h3>
+<details class="qa">
+<summary>57 What would you build next</summary>
+<p>A company-owned data model and guided import pipeline, followed by product-level stock and retraining on uploaded demand. This enables the rest of the system to operate on coherent company records. I would then implement one sandbox ERP/carrier adapter with idempotency and reconciliation before enabling any live action.</p>
+</details>
+<details class="qa">
+<summary>58 What would you simplify</summary>
+<p>For a small single-company tool, I might initially use a simpler background queue and ordinary functions instead of Kafka and LangGraph. For this project's goals, those components make event reliability and orchestration visible. Simplification should follow operational requirements rather than removing technology just to reduce the stack count.</p>
+</details>
+<details class="qa">
+<summary>59 How did AI assistance affect the project</summary>
+<p>Give an honest personal answer. A defensible pattern is: “I used AI assistance for implementation and debugging, and I am validating my understanding by tracing the code, testing invariants and explaining the tradeoffs. Here is a specific component I can walk through and a limitation I identified.” Do not invent independent contributions or claim understanding that you cannot demonstrate.</p>
+</details>
+<details class="qa">
+<summary>60 What measurable business impact did you achieve</summary>
+<p>No real customer financial impact has been established. The measured technical outcomes are the holdout forecasting improvement and verified workflow/recovery behavior. Reduced shortages or costs are intended benefits requiring a representative operational trial, cost assumptions and a suitable comparison design. This distinction demonstrates sound judgment.</p>
+</details>
+<label class="complete"><input type="checkbox" data-chapter="26-interview-question-bank"> I can explain this chapter without notes</label></section><section class="chapter" id="section-27-seven-day-learning-plan-and-mock-interview" aria-labelledby="27-seven-day-learning-plan-and-mock-interview"><h2 id="27-seven-day-learning-plan-and-mock-interview">27 Seven day learning plan and mock interview</h2>
+<h3 id="day-one-understand-the-business-story">Day one Understand the business story</h3>
+<p>Read Chapters 2–6. Draw the system from memory and explain it to someone without mentioning library names for the first minute. Define stock, inbound, lead time and replenishment. Deliverable: a sixty-second explanation and a list of five things the project does not claim.</p>
+<h3 id="day-two-understand-the-data">Day two Understand the data</h3>
+<p>Read Chapters 7–8 and the schema/import functions. Calculate the 11.1 million-row figure. Explain the model's smaller store-day training grain. Inspect a source manifest without exposing credentials. Deliverable: a schema sketch and an explanation of why the three datasets cannot be joined as one company.</p>
+<h3 id="day-three-master-the-models">Day three Master the models</h3>
+<p>Read Chapters 9–13. Recalculate the metric example and relative improvement. Explain chronological validation, recursion and the risk-model feature exclusions. Deliverable: a two-minute model answer with one methodological limitation and a proposed improvement.</p>
+<h3 id="day-four-master-planning">Day four Master planning</h3>
+<p>Read Chapters 14–17 and 20. Solve the supplier allocation example and walk through the seven nodes. Deliverable: a complete explanation of how a 510-unit shortfall becomes a reviewed order and why replanning avoids a second order.</p>
+<h3 id="day-five-master-reliability">Day five Master reliability</h3>
+<p>Read Chapters 18–21. Explain the two crash windows that require outbox/inbox protection. Inspect the corresponding tests. Deliverable: an answer to “why not exactly once?” and a drawing showing the order of database commit and Kafka offset commit.</p>
+<h3 id="day-six-practice-demonstration-and-debugging">Day six Practice demonstration and debugging</h3>
+<p>Read Chapters 22–25 and 28–29. Run the non-destructive checks, rehearse the demo, and practice identifying a failing layer from symptoms. Fault injection changes the running simulation and should be deliberately scheduled. Deliverable: a five-minute demo with a fallback if services are unavailable.</p>
+<h3 id="day-seven-mock-interview-and-honest-ownership">Day seven Mock interview and honest ownership</h3>
+<p>Answer fifteen questions without revealing their answers, perform the live trace, and complete the readiness score below. Review weak topics rather than memorizing more buzzwords. Deliverable: a clear pitch, a demonstrated workflow, one deep technical explanation, and a candid improvement plan.</p>
+<h3 id="forty-five-minute-mock-interview">Forty five minute mock interview</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Interviewer prompt</th>
+<th>What a strong response contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–3 minutes</td>
+<td>Introduce the project</td>
+<td>Problem, workflow, measured result, scope</td>
+</tr>
+<tr>
+<td>3–8 minutes</td>
+<td>Draw architecture</td>
+<td>Browser/API, state, events, models, approvals</td>
+</tr>
+<tr>
+<td>8–16 minutes</td>
+<td>Defend your forecast result</td>
+<td>Grain, time splits, baseline, metrics, limitations</td>
+</tr>
+<tr>
+<td>16–24 minutes</td>
+<td>Explain duplicate delivery</td>
+<td>Outbox, inbox, transaction/offset ordering</td>
+</tr>
+<tr>
+<td>24–30 minutes</td>
+<td>Solve a replenishment example</td>
+<td>Inbound, constraints, objective versus cost</td>
+</tr>
+<tr>
+<td>30–35 minutes</td>
+<td>Explain agents and retrieval</td>
+<td>Fixed graph, no LLM, authoritative policy</td>
+</tr>
+<tr>
+<td>35–41 minutes</td>
+<td>Diagnose an outage</td>
+<td>Evidence-based sequence, no destructive shortcuts</td>
+</tr>
+<tr>
+<td>41–45 minutes</td>
+<td>Describe next steps and contribution</td>
+<td>Priorities, honest ownership and proposed changes</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="readiness-scoring">Readiness scoring</h3>
+<p>Score yourself from 0 to 2 on each of ten abilities: explain business purpose; draw architecture; distinguish real/synthetic data; explain data grain; calculate metrics; explain chronology/recursion; solve the optimizer example; trace approval/execution; defend outbox/inbox recovery; state limitations and personal contribution. Zero means unable without notes, one means partial explanation, and two means a clear explanation plus a follow-up answer or code pointer.</p>
+<p>A score of 16/20 or more with no zero in the workflow, modeling or reliability topics is a useful self-assessment target—not a guarantee of interview success. Below that, practice the weakest chapters and repeat the mock interview.</p>
+<label class="complete"><input type="checkbox" data-chapter="27-seven-day-learning-plan-and-mock-interview"> I can explain this chapter without notes</label></section><section class="chapter" id="section-28-demo-script-and-troubleshooting" aria-labelledby="28-demo-script-and-troubleshooting"><h2 id="28-demo-script-and-troubleshooting">28 Demo script and troubleshooting</h2>
+<h3 id="five-minute-demonstration">Five minute demonstration</h3>
+<p><strong>Before the interview:</strong> start Docker and the prepared stack, verify service status, sign in using your own owner account and inspect the worker heartbeat. Do not show <code>.env.platform</code>, passwords or session tokens. Confirm trained artifacts exist. Rehearse with the same browser size you plan to use.</p>
+<p><strong>Minute one:</strong> show Data foundation and explain the three distinct source identities and M5 validation. Say which numbers describe storage and which describe model training. Avoid reading every field aloud.</p>
+<p><strong>Minute two:</strong> show Forecast lab. State the holdout dates, 5.92% versus 10.75% WAPE, and historical forecast cutoff. Explain one lag feature and the seasonal baseline.</p>
+<p><strong>Minute three:</strong> run one simulation day. Explain that the request queues ten events and the worker applies them. Show stock/planning changes once processing finishes. There may already be unresolved decisions; the planner deliberately reuses them rather than always creating a new one.</p>
+<p><strong>Minute four:</strong> choose a pending typed simulation purchase-order plan, inspect its context and approve with a meaningful reason. Show its transition to executed and the created purchase order/shipment. Do not choose a legacy sample narrative disruption plan if you want to demonstrate purchase execution.</p>
+<p><strong>Minute five:</strong> show agent runs, execution/replanning events and monitoring. Briefly explain inbox deduplication and mention that real broker outage/restore checks are recorded. Finish with one practical next step, such as company-data onboarding.</p>
+<h3 id="if-something-goes-wrong">If something goes wrong</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>First checks</th>
+<th>Explanation to give</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Page does not load</td>
+<td>Web container, port 3000, API health</td>
+<td>Separate interface availability from data/model problems</td>
+</tr>
+<tr>
+<td>Sign-in returns 401</td>
+<td>Credentials and session expiry</td>
+<td>Use normal account flow, not database password shortcuts</td>
+</tr>
+<tr>
+<td>Simulation is queued but stock unchanged</td>
+<td>Worker age, pending outbox, broker and worker logs</td>
+<td>Accepted asynchronous work is not completed work</td>
+</tr>
+<tr>
+<td>Worker repeatedly restarts</td>
+<td>Last error, topic configuration, model availability</td>
+<td>Fix the cause before replaying events</td>
+</tr>
+<tr>
+<td>Forecast is unavailable</td>
+<td>Artifact files and training status</td>
+<td>Do not substitute fabricated successful results</td>
+</tr>
+<tr>
+<td>Plan is pending</td>
+<td>Value, risk, confidence, severity and required role</td>
+<td>Pending can be correct policy behavior</td>
+</tr>
+<tr>
+<td>No new plan appears</td>
+<td>Existing unresolved decision or sufficient inbound</td>
+<td>Deduplication and inventory position may explain it</td>
+</tr>
+<tr>
+<td>Approved action fails</td>
+<td>Current capacity, policy version, supplier state, dead letters</td>
+<td>Revalidation prevents stale approvals from forcing invalid actions</td>
+</tr>
+<tr>
+<td>Historical dates appear</td>
+<td>M5 source cutoff</td>
+<td>Historical evaluation is intentionally not relabelled as current sales</td>
+</tr>
+</tbody>
+</table></div>
+<p>For logs, use <code>docker compose --env-file .env.platform -f docker-compose.platform.yml logs --tail 60 worker</code> from the repository root. Inspect errors before retrying. Do not restart every service or delete volumes as a first response.</p>
+<p>If the machine or containers are unavailable, use the screenshots and saved reports included with the project and explain that you are showing recorded evidence rather than a live demo. A controlled explanation of failure is better than pretending an inactive screen is updating.</p>
+<label class="complete"><input type="checkbox" data-chapter="28-demo-script-and-troubleshooting"> I can explain this chapter without notes</label></section><section class="chapter" id="section-29-practical-exercises-with-solutions" aria-labelledby="29-practical-exercises-with-solutions"><h2 id="29-practical-exercises-with-solutions">29 Practical exercises with solutions</h2>
+<h3 id="exercise-one-inventory-position">Exercise one Inventory position</h3>
+<p>A warehouse has stock 120, inbound 250, forecast 80/day and capacity 1,000. What does the current rule request?</p>
+<p><strong>Solution:</strong> target <code>min(1000, 80×7) = 560</code>; available <code>120+250 = 370</code>; shortfall <code>560-370 = 190</code>. If inbound were 500, available would be 620 and no additional order would be needed. This simple rule does not explicitly time-phase whether inbound arrives before a stockout.</p>
+<h3 id="exercise-two-policy-boundaries">Exercise two Policy boundaries</h3>
+<p>Evaluate four feasible plans: A has value $10,000, confidence 0.85, risk 0.49 and MEDIUM severity. B differs only in risk 0.50. C has value $100,000. D has value $5,000,001.</p>
+<p><strong>Solution:</strong> A can auto-approve. B is pending because risk must be strictly below 0.5. C is pending and requires executive-level approval. D is blocked for exceeding the maximum value. A critical severity would also force human review even when A's other thresholds pass.</p>
+<h3 id="exercise-three-duplicate-execution">Exercise three Duplicate execution</h3>
+<p>An approved order commits, but the worker crashes before acknowledging the Kafka message. What happens after restart?</p>
+<p><strong>Solution:</strong> the event's inbox ID committed with its state changes. Redelivery is recognized and does not repeat execution. Separately, the executor also returns an already executed decision if directly retried. Explain why these are two layers of protection, not proof of exactly-once transport.</p>
+<h3 id="exercise-four-read-a-feature-expression">Exercise four Read a feature expression</h3>
+<p>What is wrong with computing <code>rolling(7).mean()</code> on the unshifted target and using it to predict that same day's target?</p>
+<p><strong>Solution:</strong> the average contains the answer being predicted. Shift first, group by the correct series, and ensure later evaluation steps do not substitute future actuals for predictions. An out-of-time split alone cannot repair a leaked feature.</p>
+<h3 id="exercise-five-sql-data-validation">Exercise five SQL data validation</h3>
+<p>Explain these read-only SQL examples. They are teaching queries for PostgreSQL and may scan large tables; use them deliberately.</p>
+<pre><code class="language-sql">-- Product-day rows without a matching series should be absent.
+SELECT COUNT(*) AS orphan_count
+FROM m5_demand d
+LEFT JOIN m5_series s ON s.series_id = d.series_id
+WHERE s.series_id IS NULL;
+
+-- Count available history per store.
+SELECT store_id, COUNT(*) AS days, MIN(date), MAX(date)
+FROM m5_store_daily
+GROUP BY store_id
+ORDER BY store_id;
+
+-- Inspect delivery backlog without exposing credentials.
+SELECT status, COUNT(*) AS events, MAX(attempts) AS max_attempts
+FROM outbox
+GROUP BY status;
+</code></pre>
+<p><strong>Solution:</strong> the first checks a referential invariant, the second checks coverage and expected grain, and the third identifies messaging backlog/retries. A zero orphan count does not establish correct demand values; different validation checks answer different questions.</p>
+<h3 id="exercise-six-explain-a-code-level-invariant">Exercise six Explain a code-level invariant</h3>
+<p>Find the transaction containing purchase-order insertion and <code>execution.completed</code> enqueue. Then explain what would break if enqueue occurred outside the transaction after it committed.</p>
+<p><strong>Solution:</strong> a process crash could leave a purchase order with no durable instruction to notify downstream consumers. Replanning might never happen. The outbox row must commit atomically with the state change; actual network publication can happen later.</p>
+<h3 id="exercise-seven-design-a-real-erp-adapter">Exercise seven Design a real ERP adapter</h3>
+<p>Propose the minimum contract for replacing simulated purchase-order execution. Do not change the live project during an interview without authorization.</p>
+<p><strong>Solution:</strong> include an external correlation/idempotency key, typed product/vendor mapping, sandbox/live configuration, credential handling, request/response persistence, submission and confirmation states, uncertain-outcome reconciliation, rate limits and retry policy. A network timeout may mean the ERP accepted the order but the response was lost; blindly creating a new order is unsafe. Persist intent first, reconcile by idempotency/correlation key, and only mark confirmed success when evidence exists.</p>
+<h3 id="exercise-eight-a-safe-forecast-improvement-experiment">Exercise eight A safe forecast improvement experiment</h3>
+<p>Design a comparison adding holiday/price features without contaminating the final test.</p>
+<p><strong>Solution:</strong> verify those features are available at the intended prediction time; create training and validation windows; tune/select using validation or rolling-origin folds; lock the candidate and compare once on a later untouched test. Maintain the same forecast horizon and grain. Do not repeatedly inspect the original test while tuning and continue calling it untouched.</p>
+<h3 id="exercise-nine-star-without-invented-experience">Exercise nine STAR without invented experience</h3>
+<p>Prepare an answer to “Tell me about a difficult bug.” Use Situation, Task, Action and Result, but use only your actual role.</p>
+<p><strong>Solution pattern:</strong> “During restart verification, the worker failed when all topics already existed. The task was to make initialization safe to repeat. The implementation was changed to skip an empty create-topics call, and a regression test covered the existing-topic case. A later restart recovery check passed.” If you studied this fix rather than personally authored it, say that. Then explain the code and why repeated startup must be idempotent.</p>
+<label class="complete"><input type="checkbox" data-chapter="29-practical-exercises-with-solutions"> I can explain this chapter without notes</label></section><section class="chapter" id="section-30-final-revision-sheet-and-claim-checklist" aria-labelledby="30-final-revision-sheet-and-claim-checklist"><h2 id="30-final-revision-sheet-and-claim-checklist">30 Final revision sheet and claim checklist</h2>
+<h3 id="numbers-to-remember">Numbers to remember</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M5 products and stores</td>
+<td>3,049 products; 10 stores</td>
+</tr>
+<tr>
+<td>M5 product/store series</td>
+<td>30,490</td>
+</tr>
+<tr>
+<td>Imported product-day window</td>
+<td>365 days; 11,128,850 rows</td>
+</tr>
+<tr>
+<td>Store-level history</td>
+<td>1,913 days; 19,130 store-days</td>
+</tr>
+<tr>
+<td>Forecast horizon</td>
+<td>28 days; 280 final test store-days</td>
+</tr>
+<tr>
+<td>Validation dates</td>
+<td>29 February–27 March 2016</td>
+</tr>
+<tr>
+<td>Final test dates</td>
+<td>28 March–24 April 2016</td>
+</tr>
+<tr>
+<td>Demand WAPE</td>
+<td>Candidate 5.92%; baseline 10.75%</td>
+</tr>
+<tr>
+<td>Demand MAE and RMSE</td>
+<td>250.30 and 349.81 units</td>
+</tr>
+<tr>
+<td>Relative WAPE reduction</td>
+<td>About 44.9%</td>
+</tr>
+<tr>
+<td>DataCo records</td>
+<td>180,519 lines; 65,752 aggregated orders</td>
+</tr>
+<tr>
+<td>Risk evaluation</td>
+<td>AUC about 0.733; Brier about 0.196; accuracy about 69.27%</td>
+</tr>
+<tr>
+<td>SF procurement extract</td>
+<td>20,000 accounting rows</td>
+</tr>
+<tr>
+<td>Graph structure</td>
+<td>Seven sequential nodes</td>
+</tr>
+<tr>
+<td>Kafka topics</td>
+<td>Four; worker consumes three; one partition per topic</td>
+</tr>
+<tr>
+<td>Approval thresholds</td>
+<td>$10k auto ceiling; 0.85 confidence floor; risk below 0.5; $100k executive threshold; $5m max</td>
+</tr>
+<tr>
+<td>Recorded tests</td>
+<td>42 backend; 3 browser workflows; separate live-stack/recovery/restore checks</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="claims-to-make-precisely">Claims to make precisely</h3>
+<ul>
+<li>Say <strong>at-least-once messages with idempotent database effects</strong>, not distributed exactly once.</li>
+<li>Say <strong>store-level forecasting</strong>, not a trained model for every SKU.</li>
+<li>Say <strong>tool-based LangGraph workflow</strong>, not autonomous LLM agents.</li>
+<li>Say <strong>TF-IDF retrieval with cited extracts</strong>, not an embedding/vector-database generative system.</li>
+<li>Say <strong>simulated ERP execution</strong>, not real supplier purchases.</li>
+<li>Say <strong>about 45% lower holdout WAPE</strong>, not 45% business cost savings.</li>
+<li>Say <strong>empirical ranges</strong>, not proven 90% future coverage.</li>
+<li>Say <strong>independent historical datasets</strong>, not one company's integrated production records.</li>
+<li>Say <strong>configured CI and recorded local checks</strong>, not a remote CI run you have not inspected.</li>
+<li>Say <strong>local Docker deployment</strong>, not globally available production hosting.</li>
+</ul>
+<h3 id="a-strong-closing-answer">A strong closing answer</h3>
+<p>“The project demonstrates that model predictions can be connected to controlled, observable operational actions. The most important engineering work is preserving trustworthy data, evaluating forecasts in time order, enforcing constraints and approvals, and handling retries without duplicate effects. The next step is coherent company-owned product data and a sandbox-tested business-system adapter.”</p>
+<label class="complete"><input type="checkbox" data-chapter="30-final-revision-sheet-and-claim-checklist"> I can explain this chapter without notes</label></section><section class="chapter" id="section-31-glossary-for-quick-reference" aria-labelledby="31-glossary-for-quick-reference"><h2 id="31-glossary-for-quick-reference">31 Glossary for quick reference</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning in this project</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Aggregate</td>
+<td>A summary, such as total daily units across all products in a store</td>
+</tr>
+<tr>
+<td>Artifact</td>
+<td>Saved model, forecast file, evaluation JSON or other training output</td>
+</tr>
+<tr>
+<td>Atomic transaction</td>
+<td>Related changes commit together or roll back together</td>
+</tr>
+<tr>
+<td>Backtest</td>
+<td>Evaluate predictions on a historical period as though its outcomes were not yet known</td>
+</tr>
+<tr>
+<td>Baseline</td>
+<td>Simple reference method used to judge added model value</td>
+</tr>
+<tr>
+<td>Calibration</td>
+<td>Agreement between predicted probabilities/ranges and observed frequencies</td>
+</tr>
+<tr>
+<td>Chronological split</td>
+<td>Earlier data trains the model; later data validates/tests it</td>
+</tr>
+<tr>
+<td>Consumer offset</td>
+<td>Position recording progress within a Kafka partition</td>
+</tr>
+<tr>
+<td>Constraint</td>
+<td>A rule every feasible optimization solution must satisfy</td>
+</tr>
+<tr>
+<td>Data grain</td>
+<td>What one row represents, such as product/day or whole order</td>
+</tr>
+<tr>
+<td>Data lineage</td>
+<td>Trace of origin, transformations and model/run usage</td>
+</tr>
+<tr>
+<td>Dead letter</td>
+<td>A retained event that could not be processed successfully</td>
+</tr>
+<tr>
+<td>Domain shift</td>
+<td>A difference between model training conditions and application conditions</td>
+</tr>
+<tr>
+<td>Drift</td>
+<td>Change in a distribution or performance over time; not every error spike proves it</td>
+</tr>
+<tr>
+<td>Feature</td>
+<td>An input used by a predictive model</td>
+</tr>
+<tr>
+<td>Feasible solution</td>
+<td>A solution satisfying the modeled constraints</td>
+</tr>
+<tr>
+<td>Foreign key</td>
+<td>Database reference that links a row to an existing related row</td>
+</tr>
+<tr>
+<td>Heuristic</td>
+<td>A practical rule or approximation without a claim of exact probabilistic meaning</td>
+</tr>
+<tr>
+<td>Idempotent operation</td>
+<td>Repeating the same identified operation does not repeat its intended effect</td>
+</tr>
+<tr>
+<td>Inbound</td>
+<td>Stock expected from undelivered shipments</td>
+</tr>
+<tr>
+<td>Inference</td>
+<td>Using a fitted model to produce a prediction</td>
+</tr>
+<tr>
+<td>Lag</td>
+<td>A value from an earlier time step</td>
+</tr>
+<tr>
+<td>Leakage</td>
+<td>Use of information unavailable at the intended prediction time</td>
+</tr>
+<tr>
+<td>Lead time</td>
+<td>Time from an order or dispatch to receipt, depending on the defined process</td>
+</tr>
+<tr>
+<td>Namespace</td>
+<td>Origin/type prefix that separates otherwise similar identifiers</td>
+</tr>
+<tr>
+<td>Objective</td>
+<td>Quantity an optimizer minimizes or maximizes</td>
+</tr>
+<tr>
+<td>Optimal solution</td>
+<td>Best solution under the modeled objective and constraints</td>
+</tr>
+<tr>
+<td>Outbox</td>
+<td>Persisted events awaiting publication, written with business state</td>
+</tr>
+<tr>
+<td>Inbox</td>
+<td>Record of event IDs already applied by a consumer</td>
+</tr>
+<tr>
+<td>Partition</td>
+<td>Ordered subdivision of a Kafka topic</td>
+</tr>
+<tr>
+<td>Policy</td>
+<td>Authoritative rules controlling permitted actions and approvals</td>
+</tr>
+<tr>
+<td>Provenance</td>
+<td>Evidence about where data or a result came from</td>
+</tr>
+<tr>
+<td>Reconciliation</td>
+<td>Comparing internal and external state to resolve uncertain or inconsistent outcomes</td>
+</tr>
+<tr>
+<td>Recursive forecast</td>
+<td>Predict a step and use that prediction to construct later inputs</td>
+</tr>
+<tr>
+<td>Replenishment</td>
+<td>Ordering/transferring stock to restore an inventory target</td>
+</tr>
+<tr>
+<td>ROC-AUC</td>
+<td>Ranking discrimination measure for binary outcomes</td>
+</tr>
+<tr>
+<td>Rolling feature</td>
+<td>Statistic calculated over a moving historical window</td>
+</tr>
+<tr>
+<td>Session</td>
+<td>Server-recognized authenticated login state</td>
+</tr>
+<tr>
+<td>SKU</td>
+<td>Specific stock-keeping product identifier</td>
+</tr>
+<tr>
+<td>Source of truth</td>
+<td>The authoritative persisted representation used for decisions</td>
+</tr>
+<tr>
+<td>TF-IDF</td>
+<td>Text weighting based on within-document frequency and cross-document rarity</td>
+</tr>
+<tr>
+<td>Tick</td>
+<td>One discrete simulation time increment</td>
+</tr>
+<tr>
+<td>Upsert</td>
+<td>Insert a new key or update the row already holding that key</td>
+</tr>
+<tr>
+<td>WAPE</td>
+<td>Total absolute forecast error divided by total absolute actual demand</td>
+</tr>
+</tbody>
+</table></div>
+<label class="complete"><input type="checkbox" data-chapter="31-glossary-for-quick-reference"> I can explain this chapter without notes</label></section><section class="chapter" id="section-32-evidence-and-scope-of-this-guide" aria-labelledby="32-evidence-and-scope-of-this-guide"><h2 id="32-evidence-and-scope-of-this-guide">32 Evidence and scope of this guide</h2>
+<p>This guide was checked against active source files including <code>nexus/api.py</code>, <code>nexus/store.py</code>, the modules under <code>nexus/platform</code>, <code>policies/approval.json</code>, the active UI components, deployment configuration and test definitions. Numerical results come from <code>runtime/artifacts/demand_model.json</code>, <code>risk_model.json</code>, <code>m5_validation.json</code>, <code>public_sources.json</code> and the saved verification reports. The original development history supplies the described observed fixes.</p>
+<p>The guide is self-contained for studying concepts and answers. File references let you substantiate them in a code review, but the explanations do not require opening external articles. Dates, thresholds and measured values describe this version; if you modify the code or retrain on different data, update the guide rather than continuing to repeat obsolete figures.</p>
+<p>Your final mastery test is practical: explain the architecture without reading, calculate one model metric and one allocation, locate the relevant functions, demonstrate one controlled execution, and describe a failure/recovery path without overclaiming. That is the preparation this handbook is designed to support.</p><label class="complete"><input type="checkbox" data-chapter="32-evidence-and-scope-of-this-guide"> I can explain this chapter without notes</label></section><footer class="footer">NEXUS interview study edition · Explain what the code does, support what you claim, and practice what you demonstrate.</footer></main><script>
+const links=[...document.querySelectorAll('[data-chapter-link]')];
+const chapters=[...document.querySelectorAll('.chapter')];
+const search=document.getElementById('search');
+const answers=[...document.querySelectorAll('details.qa')];
+let saved={};try{saved=JSON.parse(localStorage.getItem('nexus-handbook-progress-v1')||'{}')}catch(e){}
+function updateProgress(){const n=Object.values(saved).filter(Boolean).length;document.getElementById('progress').value=n;document.getElementById('progress-text').textContent=n+' of '+chapters.length+' chapters practiced';links.forEach(a=>a.classList.toggle('done',!!saved[a.dataset.chapterLink]));try{localStorage.setItem('nexus-handbook-progress-v1',JSON.stringify(saved))}catch(e){}}
+document.querySelectorAll('[data-chapter]').forEach(c=>{c.checked=!!saved[c.dataset.chapter];c.addEventListener('change',()=>{saved[c.dataset.chapter]=c.checked;updateProgress()})});updateProgress();
+const searchText=chapters.map(s=>s.textContent.toLowerCase());
+search.addEventListener('input',()=>{const query=search.value.trim().toLowerCase();let n=0;links.forEach((a,i)=>{const show=!query||searchText[i].includes(query);a.hidden=!show;if(show)n++});document.getElementById('search-count').textContent=query?n+' matching chapters':'32 chapters · search their full text'});
+document.getElementById('answers').addEventListener('click',function(){const open=answers.some(a=>!a.open);answers.forEach(a=>a.open=open);this.textContent=open?'Hide all answers':'Show all 60 answers'});
+document.getElementById('reading').addEventListener('click',function(){document.body.classList.toggle('study');this.setAttribute('aria-pressed',document.body.classList.contains('study'));});
+document.getElementById('menu').addEventListener('click',()=>document.body.classList.toggle('menu-open'));
+document.getElementById('close-menu').addEventListener('click',()=>document.body.classList.remove('menu-open'));
+links.forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('menu-open')));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('menu-open')});
+let printState=[];function beforePrint(){printState=answers.map(a=>a.open);answers.forEach(a=>a.open=true)}function afterPrint(){answers.forEach((a,i)=>a.open=printState[i]??false)}window.addEventListener('beforeprint',beforePrint);window.addEventListener('afterprint',afterPrint);document.getElementById('print').addEventListener('click',()=>window.print());
+const observer=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting);if(visible.length){const id=visible[0].target.querySelector('h2').id;links.forEach(a=>a.classList.toggle('active',a.dataset.chapterLink===id))}},{rootMargin:'-15% 0px -65% 0px'});chapters.forEach(s=>observer.observe(s));
+</script></body></html>

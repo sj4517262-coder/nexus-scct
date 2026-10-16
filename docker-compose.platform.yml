@@ -1,0 +1,96 @@
+name: nexus-platform
+x-platform: &platform
+  build:
+    context: .
+    dockerfile: docker/Dockerfile.platform
+  image: nexus-platform:4.0.0
+  environment: &platform-env
+    NEXUS_DATABASE_URL: postgresql://nexus:${NEXUS_POSTGRES_PASSWORD}@postgres:5432/nexus
+    NEXUS_KAFKA_BOOTSTRAP: kafka:29092
+    NEXUS_MLFLOW_URI: http://mlflow:5000
+    NEXUS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000
+    NEXUS_ARTIFACT_DIR: /app/runtime/artifacts
+  volumes:
+    - ./runtime/artifacts:/app/runtime/artifacts
+    - ./data:/app/data
+  depends_on:
+    postgres:
+      condition: service_healthy
+    kafka:
+      condition: service_healthy
+  restart: unless-stopped
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: nexus
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: ${NEXUS_POSTGRES_PASSWORD:?Set NEXUS_POSTGRES_PASSWORD}
+    ports: ["127.0.0.1:5433:5432"]
+    volumes: ["platform-postgres:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus -d nexus"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+  api:
+    <<: *platform
+    ports: ["127.0.0.1:8000:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+  worker:
+    <<: *platform
+    command: ["python", "scripts/manage.py", "worker"]
+  bootstrap:
+    <<: *platform
+    profiles: ["jobs"]
+    command: ["python", "scripts/manage.py", "bootstrap"]
+    restart: "no"
+  mlflow:
+    <<: *platform
+    command: ["mlflow", "server", "--host", "0.0.0.0", "--port", "5000", "--backend-store-uri", "sqlite:////app/runtime/mlflow-server.db", "--serve-artifacts", "--artifacts-destination", "/app/runtime/mlflow-artifacts"]
+    ports: ["127.0.0.1:5001:5000"]
+    volumes: ["platform-mlflow:/app/runtime"]
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+      args:
+        NEXUS_API_URL: http://api:8000
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+  kafka:
+    image: apache/kafka:3.9.1
+    ports: ["127.0.0.1:19092:19092"]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:29092,EXTERNAL://:19092,CONTROLLER://:29093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes: ["platform-kafka:/var/lib/kafka/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:29092 --list"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+    restart: unless-stopped
+volumes:
+  platform-postgres:
+  platform-kafka:
+  platform-mlflow:
